@@ -1,0 +1,204 @@
+{
+ "title": "Acme Restore Check demo (fictional example)",
+ "subtitle": "Fictional expo booth, one staffed laptop, recorded offline demo; 30-second and 2-minute paths",
+ "wpm": 120,
+ "forbidden_terms": [
+  "Project Kestrel"
+ ],
+ "allowed_long_ids": [],
+ "spoken_only": {
+  "terms": [
+   "Acme Console"
+  ],
+  "lines": [
+   {
+    "text": "It's also planned for Acme Console; no dates yet.",
+    "status": "PENDING OWNER"
+   }
+  ],
+  "pointer": "One spoken-only line exists for 'How do I get it?'. It is in the printed staff copy only."
+ },
+ "cue_card": {
+  "message": "Restore Check proves a backup restores before you need it.",
+  "anchors": [
+   {
+    "label": "Open on their problem.",
+    "text": "\"When did you last restore a backup on purpose?\""
+   }
+  ],
+  "ask": "\"Talk to your Acme account manager to book a working session.\"",
+  "reminders": "No dates, no prices, no customer names"
+ },
+ "beats": {
+  "hook": {
+   "title": "Hook",
+   "click": "any key (stops the loop)",
+   "clicks_s": 1,
+   "wait_s": 3,
+   "anchor": true,
+   "say": [
+    "When did you last restore a backup on purpose?"
+   ],
+   "cue": "[pause: wait for an answer]",
+   "land": "Untested backups are a guess",
+   "pace": "Ask, then stop.",
+   "source": "figures F1",
+   "card": {
+    "click": "Any key",
+    "say": "\"When did you last restore a backup on purpose?\""
+   }
+  },
+  "run": {
+   "title": "Recorded run",
+   "click": "screen 3, 'Watch the run', 'Auto-play'",
+   "clicks_s": 4,
+   "screen_s": 50,
+   "screen_source": "timed in rehearsal: 50 s to Done",
+   "say": [
+    "This is a recorded run from a test lab, with made-up server names."
+   ],
+   "over": [
+    "It restores to a scratch copy, then checks the files open."
+   ],
+   "cue": "[act: talk only in the gaps]",
+   "land": "It's a recorded real run",
+   "pace": "Let it play.",
+   "source": "figures F2, F5",
+   "card": {
+    "click": "3 → 'Watch the run' → Auto-play",
+    "say": "\"This is a recorded run from a test lab, with made-up server names.\""
+   }
+  },
+  "close": {
+   "title": "Close",
+   "click": "End",
+   "clicks_s": 1,
+   "wait_s": 1,
+   "anchor": true,
+   "say": [
+    "Talk to your Acme account manager to book a working session."
+   ],
+   "cue": "[soft: an offer]",
+   "land": "One next step",
+   "pace": "Step back.",
+   "source": "brief: close line",
+   "card": {
+    "click": "End",
+    "say": "\"Talk to your Acme account manager to book a working session.\""
+   }
+  }
+ },
+ "paths": [
+  {
+   "id": "30",
+   "name": "30-second path",
+   "budget_s": 30,
+   "beats": [
+    "hook",
+    "close"
+   ],
+   "purpose": "A passer-by: one question, one next step."
+  },
+  {
+   "id": "2",
+   "name": "2-minute path",
+   "budget_s": 120,
+   "beats": [
+    "hook",
+    "run",
+    "close"
+   ],
+   "purpose": "A visitor who stops: one recorded run."
+  }
+ ],
+ "sections": [
+  {
+   "id": "stand",
+   "lead": true,
+   "nav": "Stand",
+   "title": "Where to stand",
+   "items": [
+    "Beside the screen, turned halfway to the visitor; point with an open hand."
+   ]
+  },
+  {
+   "id": "pick",
+   "lead": true,
+   "nav": "Pick the path",
+   "title": "Pick the path",
+   "items": [
+    "**\"Got two minutes?\"** No: 30 s. Yes: 2 min."
+   ]
+  },
+  {
+   "id": "never",
+   "title": "What never to say",
+   "items": [
+    "No dates, no prices, no customer names, no codenames.",
+    "Show only what is available today, art of the possible, and items launching at the event; no preview-to-GA stories."
+   ]
+  }
+ ],
+ "close": {
+  "title": "Reset",
+  "script": [
+   {
+    "text": "[click: Home] [click: A, attract mode]"
+   }
+  ]
+ },
+ "questions": [
+  {
+   "q": "Is it real?",
+   "a": "\"It's a recorded run from a test lab; the server names are made up.\""
+  },
+  {
+   "q": "How do I get it?",
+   "a": "\"Restore Check is planned to be available in the Acme Marketplace.\"",
+   "confirm": true
+  }
+ ],
+ "rehearsal": [
+  "**0:00-2:00 · The 2-minute path, timed.** Good: close starts by 1:48."
+ ],
+ "card": {
+  "title": "Acme Restore Check · 2-minute path",
+  "front_path": "2",
+  "front_min_pt": 14,
+  "back_min_pt": 10,
+  "size_mm": [
+   210,
+   148
+  ],
+  "staff_line": false,
+  "back": [
+   {
+    "title": "Questions",
+    "items": [
+     "**Real?** Recorded, test lab, made-up names."
+    ]
+   }
+  ]
+ },
+ "footer": "Fictional example. Sources: the fictional figures file F1-F5.",
+ "cheat_sheet": {
+  "title": "Acme Restore Check · cheat sheet",
+  "subtitle": "Fictional example. One page for anyone covering the station.",
+  "blocks": [
+   {
+    "title": "In one breath",
+    "paragraphs": [
+     "Restore Check proves a backup restores before you need it."
+    ]
+   },
+   {
+    "title": "Say, and never say",
+    "items": [
+     "**Close:** \"Talk to your Acme account manager to book a working session.\"",
+     "**Never:** dates, prices, customer names."
+    ]
+   }
+  ],
+  "footer": "Fictional example."
+ }
+}

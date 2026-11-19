@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<!-- SPDX-License-Identifier: MIT -->
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acme Ledger · demo</title>
+<meta name="description" content="Single-file offline demo built from the demo-engine template. Fictional product and data.">
+<!-- Source file. Build the single-file demo with:  python3 build.py src/demo.src.html dist/acme-ledger-demo.html
+     The build fills the css, js, json, img, font, video and raw placeholders and the staff code hash (see build.py).
+     Paths are relative to the template folder. -->
+<script>
+/* ================= CONFIG: the editable defaults. URL options win over these. =================
+   mode         staffed | presenter | kiosk | wall           (?mode=)
+   theme        dark | light                                 (?theme=, L key, saved per browser)
+   idleSeconds  return to the first slide after this many idle seconds; 0 turns it off   (?idle=)
+   speed        terminal and loop speed multiplier            (?speed=)
+   playlists    named lists of slide numbers; the wall loop always starts at the first item  (?playlist=)
+   dwellSeconds seconds per slide in the wall loop; a slide's data-dwell wins
+   chord        the key chord that opens the staff panel in every mode
+   staffCodeSha256  SHA-256 of the staff code, written by build.py. The code itself is never stored.
+   The staff code is a convenience gate for a booth. It is NOT security: anyone with the file can read the page. */
+window.DEMO_CONFIG = {
+  title: 'Acme Ledger demo',
+  mode: 'staffed',
+  theme: 'dark',
+  idleSeconds: 90,
+  speed: 1,
+  playlists: { all: [1, 2, 3, 4, 5, 6, 7, 8], short: [1, 3, 4, 6, 8] },
+  playlist: 'all',
+  dwellSeconds: 9,
+  chord: { key: 'S', ctrl: true, alt: true, shift: false },
+  staffCodeSha256: '{{staff_code_sha256}}'
+};
+(function () { var q = new URLSearchParams(location.search), t = q.get('theme');
+  if (!t) { try { t = localStorage.getItem('demo-theme'); } catch (e) {} }
+  document.documentElement.setAttribute('data-theme', (t || window.DEMO_CONFIG.theme) === 'light' ? 'light' : 'dark'); })();
+</script>
+<style>
+{{css:src/engine.css}}
+{{css:src/term-player.css}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<p class="sr-only" id="live" aria-live="polite"></p>
+
+<div class="viewport" id="viewport">
+<main class="stage" id="stage">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mark" viewBox="0 0 64 64"><rect x="3" y="3" width="58" height="58" rx="14" fill="currentColor" opacity=".16"/><path d="M18 44h28M18 32h28M18 20h16" stroke="currentColor" stroke-width="6" stroke-linecap="round" fill="none"/></symbol>
+</svg>
+
+<!-- 1 -->
+<section class="slide cover" data-title="Acme Ledger" aria-label="Title" data-dwell="7">
+  <p class="eyebrow">Fictional product · sample demo</p>
+  <h1>Close the month in days, with a person approving every posting.</h1>
+  <p class="lead">Acme Ledger matches bank lines to invoices and receipts, explains what it can't match, and posts nothing until your controller says yes.</p>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>Fictional product and data</span></div>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-title="The problem" aria-label="The problem">
+  <p class="eyebrow">The problem</p>
+  <h2>Most of a month-end close is matching, and it's done by hand.</h2>
+  <div class="cards" style="--n:2">
+    <div class="card"><span class="k">Baseline</span><span class="big">8<small>working days</small></span><p>Average close over the last six closes, before the pilot.</p></div>
+    <div class="card"><span class="k">Where the time goes</span><ul class="plain"><li>Export the bank feed</li><li>Find the invoice for each line</li><li>Chase the ones that don't fit</li><li>Post, then check again</li></ul></div>
+  </div>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>Sample figures, see FIGURES.md</span></div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-title="How it works" aria-label="How it works">
+  <p class="eyebrow">How it works</p>
+  <h2>Five steps. Nothing reaches the books before step 3.</h2>
+  <ol class="steps">
+    <li><b>Match</b><span>Each bank line to an invoice or receipt, with the evidence attached.</span></li>
+    <li><b>Plan</b><span>A posting plan, plus every exception with its reason.</span></li>
+    <li class="gate"><b>Approve</b><span>The controller on duty reads the plan and says yes or no.</span></li>
+    <li><b>Post</b><span>Only the approved plan, with the approver's name on the batch.</span></li>
+    <li><b>Report</b><span>A close report your auditors can read.</span></li>
+  </ol>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>3 / 8</span></div>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-title="Drive it" aria-label="Drive it: recreated terminal session">
+  <p class="eyebrow">Drive it · recreated, not live</p>
+  <h2 style="font-size:44px">Approve it, decline it, or inject an issue.</h2>
+  <div class="term-slot" data-no-advance></div>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>Scripted recreation with fictional data</span></div>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-title="The close report" aria-label="The close report">
+  <p class="eyebrow">The evidence</p>
+  <h2>Every run ends with a report a person can read and a machine can check.</h2>
+  <div class="cards">
+    <div class="card"><span class="k">Matched</span><span class="big">91%</span><p>11,295 of 12,412 bank lines, each with its document.</p></div>
+    <div class="card"><span class="k">For people</span><span class="big">1,117</span><p>Exceptions, grouped by reason and owner.</p></div>
+    <div class="card"><span class="k">Posted early</span><span class="big">0</span><p>Nothing posted before the approval.</p></div>
+  </div>
+  <button class="cta" type="button" data-open-report>Open the close report</button>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>October close, North entity (fictional)</span></div>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-title="Pilot results" aria-label="Pilot results">
+  <p class="eyebrow">Pilot · 2 business units · 3 closes</p>
+  <h2>The close went from 8 working days to 3.</h2>
+  <div class="cards">
+    <div class="card"><span class="k">Median close</span><span class="big">3<small>days</small></span><p>Down from an 8-day average before the pilot.</p></div>
+    <div class="card"><span class="k">Unapproved postings</span><span class="big">0</span><p>Every batch carries a named approver.</p></div>
+    <div class="card"><span class="k">Caught at review</span><span class="big">14</span><p>Plans declined, fixed, then posted.</p></div>
+  </div>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>Fictional sample data</span></div>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-title="What it doesn't do" aria-label="What it does not do">
+  <p class="eyebrow">Honest limits</p>
+  <h2>What it doesn't do.</h2>
+  <div class="cards">
+    <div class="card"><h3>Decide for you</h3><p>It proposes. The controller approves or declines every plan.</p></div>
+    <div class="card"><h3>Clear every line</h3><p>About 1 in 11 lines still needs a person. It says why for each one.</p></div>
+    <div class="card"><h3>Replace the audit</h3><p>It writes the evidence. Your auditors still read it.</p></div>
+  </div>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>7 / 8</span></div>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-title="Next step" aria-label="Next step">
+  <p class="eyebrow">Next step</p>
+  <h2>Two more business units for one quarter, with one controller as sponsor.</h2>
+  <p class="lead">Which unit would you put in first?</p>
+  <p class="honest">About this demo: the product, the data and the run are fictional. The terminal on slide 4 is a scripted recreation, not a live system.</p>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>Thank you</span></div>
+</section>
+
+</main>
+</div>
+
+<!-- chrome -->
+<div class="chrome bl">
+  <span class="modetag" id="modetag"></span>
+  <button class="ibtn" id="pausebtn" type="button" aria-pressed="false" aria-label="Pause or play the loop (P)"><span>Pause</span></button>
+</div>
+<div class="chrome br">
+  <button class="ibtn nav-only" id="prev" type="button" aria-label="Previous slide"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <span class="counter" id="counter" aria-hidden="true"></span>
+  <button class="ibtn nav-only" id="next" type="button" aria-label="Next slide"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  <button class="ibtn staff-only" id="gridbtn" type="button" aria-label="Slide picker (G)"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></button>
+  <button class="ibtn staff-only" id="themebtn" type="button" aria-label="Light or dark theme (L)"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg></button>
+  <button class="ibtn staff-only" id="gearbtn" type="button" aria-label="Staff panel"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></button>
+</div>
+<div class="hint" id="hint">→ next · G slides · L theme · F full screen</div>
+
+<!-- slide picker -->
+<div class="overlay" id="picker" role="dialog" aria-modal="true" aria-labelledby="picker-h">
+  <div class="panel">
+    <header><h2 id="picker-h">Go to slide</h2><button class="btn" type="button" data-close>Close</button></header>
+    <div class="body"><div class="picker-grid" id="picker-grid"></div></div>
+  </div>
+</div>
+
+<!-- staff panel -->
+<div class="overlay" id="staff" role="dialog" aria-modal="true" aria-labelledby="staff-h">
+  <div class="panel" style="width:min(720px,96vw)">
+    <header><h2 id="staff-h">Staff panel</h2><button class="btn" type="button" data-close>Close</button></header>
+    <div class="body">
+      <div id="staff-gate">
+        <p class="warnbox">A convenience gate for booth staff, not security. Never put anything behind it a visitor may not see.</p>
+        <label for="staff-code">Staff code</label><br>
+        <input class="code-in" id="staff-code" type="password" inputmode="numeric" autocomplete="off">
+        <button class="btn" id="staff-ok" type="button">Unlock</button>
+        <p class="msg" id="staff-msg" role="alert"></p>
+      </div>
+      <div id="staff-body" hidden>
+        <div class="row"><h3>Mode</h3>
+          <button class="btn" type="button" data-setmode="staffed">Staffed</button>
+          <button class="btn" type="button" data-setmode="presenter">Presenter</button>
+          <button class="btn" type="button" data-setmode="kiosk">Kiosk</button>
+          <button class="btn" type="button" data-setmode="wall">Wall loop</button>
+        </div>
+        <div class="row"><h3>Playlist (wall loop)</h3><label class="sr-only" for="staff-playlist">Playlist</label><select class="btn" id="staff-playlist"></select></div>
+        <div class="row"><h3>Jump to</h3><div id="staff-jump" class="row" style="margin:0"></div></div>
+        <div class="row"><h3>Station</h3>
+          <button class="btn" type="button" id="staff-restart">Restart at the first slide</button>
+          <button class="btn" type="button" id="staff-idle">Reset idle timer</button>
+          <button class="btn" type="button" id="staff-theme">Switch theme</button>
+          <button class="btn" type="button" id="staff-lock">Lock the panel</button>
+        </div>
+        <p class="msg" id="staff-note" style="color:var(--muted)" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- report viewer -->
+<div class="overlay" id="report" role="dialog" aria-modal="true" aria-labelledby="report-h">
+  <div class="panel" style="width:min(1100px,96vw);height:86vh">
+    <header>
+      <h2 id="report-h">Close report</h2>
+      <div class="tabs" role="tablist" aria-label="Report view">
+        <button type="button" role="tab" data-tab="human" aria-selected="true" aria-controls="panel-human">Human view</button>
+        <button type="button" role="tab" data-tab="json" aria-selected="false" aria-controls="panel-json" tabindex="-1">Machine view (JSON)</button>
+      </div>
+      <div class="zoomctl">
+        <button class="btn" type="button" id="zoom-out" aria-label="Zoom out">−</button>
+        <output id="zoom-val" aria-live="polite">100%</output>
+        <button class="btn" type="button" id="zoom-in" aria-label="Zoom in">+</button>
+        <button class="btn" type="button" id="zoom-reset">Reset</button>
+      </div>
+      <button class="btn" type="button" data-close>Close</button>
+    </header>
+    <div class="viewer" id="panel-human" role="tabpanel" tabindex="0"><div class="zoomable report" id="report-human"></div></div>
+    <div class="viewer" id="panel-json" role="tabpanel" tabindex="0" hidden><div class="zoomable"><pre class="json" id="report-json"></pre></div></div>
+  </div>
+</div>
+
+<script>
+window.DEMO_SESSION = {{json:content/session.json}};
+window.DEMO_REPORT = {{json:content/report.json}};
+</script>
+<script>
+{{js:src/term-player.js}}
+</script>
+<script>
+{{js:src/engine.js}}
+</script>
+</body>
+</html>

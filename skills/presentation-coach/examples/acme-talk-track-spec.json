@@ -1,0 +1,131 @@
+{
+  "title": "Acme Upgrade Assistant: upgrades that wait for your yes",
+  "subtitle": "Sample talk track · leadership briefing · 6-minute opening slot, then discussion · target 4:30 of speaking, hard cap 5:30 · fictional product and figures",
+  "forbidden_terms": ["Project Bluebird", "Globex"],
+  "cue_card": {
+    "message": "The assistant does the how of an upgrade, and nothing changes until a person on your team says yes.",
+    "anchors": [
+      {"label": "The gap.", "text": "The notice gives what and when. 5.5 hours of hands-on time per upgrade is the how."},
+      {"label": "The gate.", "text": "Seven steps, one approval. Nothing changes before it."},
+      {"label": "The proof.", "text": "42 upgrades, 40 minutes median, 42 of 42 approved by a person."},
+      {"label": "The ask.", "text": "Two teams, eight weeks, one executive sponsor."}
+    ],
+    "ask": "Two teams for eight weeks, with one executive sponsor. Then the question: which two teams would you put in first?",
+    "reminders": "Off slide 2 by 1:15 · into the ask by 3:30 · say 'target' and 'pilot', never 'guaranteed' · no prices"
+  },
+  "segments": [
+    {
+      "id": "s1", "nav": "1",
+      "title": "1 · The whole idea in twenty seconds",
+      "pauses_s": 4,
+      "checkpoint": "off by 0:30",
+      "purpose": "Give a cold room the whole idea before any detail, and set the promise the rest of the talk keeps.",
+      "warmth": "Name the work the room already carries before naming the product.",
+      "competence": "One plain sentence with no adjectives: what it does and where the human stays in control.",
+      "script": [
+        {"text": "\"Thanks for the time. Everyone here has an upgrade on their list right now.\" [pause]"},
+        {"text": "\"Here is the whole idea in one line. [slow] **The assistant does the work of an upgrade, and nothing changes until one of your people says yes.**\"", "anchor": true}
+      ],
+      "transition": "\"Let me start with why that matters.\""
+    },
+    {
+      "id": "s2", "nav": "2",
+      "title": "2 · The gap: what and when, but not how",
+      "pauses_s": 6,
+      "checkpoint": "off by 1:15",
+      "purpose": "Make the problem concrete with one number the room can repeat.",
+      "warmth": "Credit the three teams that logged their upgrades by hand; it was their idea.",
+      "competence": "Say the sample size with the median, and call it a baseline, not an estimate for the whole company.",
+      "script": [
+        {"text": "[click: the notice] \"Every notice tells you two things: what is going out of support, and when.\""},
+        {"text": "[click: the list] \"It doesn't tell you how. Finding every cluster, reading the release notes, planning the order, testing, running, checking. That part is ours.\""},
+        {"text": "[click: the number] \"Three of our teams logged twenty upgrades by hand. [pause: let the number land] **The median was 5.5 hours of hands-on time, per upgrade.**\"", "anchor": true},
+        {"proposal": "If you have a short true story about one of those twenty upgrades, tell it here in two sentences. Do not invent one.", "label": "Optional story, your call"}
+      ],
+      "transition": "\"So what would it take to give those hours back without giving up control?\"",
+      "notes": ["The 5.5 hours is a baseline from twenty logged upgrades. If someone asks for a company-wide number, say we don't have one yet."]
+    },
+    {
+      "id": "s3", "nav": "3",
+      "title": "3 · How it works: seven steps, one gate",
+      "pauses_s": 10,
+      "checkpoint": "off by 2:30",
+      "purpose": "Walk the seven steps and make the approval gate the moment they recall.",
+      "warmth": "Slow down at Approve and look at the leaders; this is the part that protects their teams.",
+      "competence": "Say which steps are read-only. Precision about what touches production earns the trust.",
+      "script": [
+        {"text": "[click: Discover] \"It starts by finding every cluster the notice covers. [click: Analyze] Then it checks versions and the breaking changes that apply to us.\""},
+        {"text": "[click: Plan] \"It writes a plan file: the order, the windows, the rollback. [click: Dry run] And it rehearses that plan on a copy.\""},
+        {"text": "\"Four steps in, it has changed nothing. Everything so far is read-only.\""},
+        {"text": "[click: Approve] [pause] [slow: eyes on the room] **\"Then it stops. A named person on your team reads the plan and says yes. Until then, nothing changes.\"**", "anchor": true},
+        {"text": "[click: Execute] \"After the yes, it runs the plan in your own pipeline, one window at a time. [click: Validate] And it checks health after each change, and rolls back if a check fails.\""}
+      ],
+      "transition": "\"That's the design. Here's what happened in the pilot.\""
+    },
+    {
+      "id": "s4", "nav": "4",
+      "title": "4 · The pilot: hours to minutes",
+      "pauses_s": 8,
+      "checkpoint": "off by 3:15",
+      "purpose": "Prove the design with pilot results, and show the safety net working, not just the speed.",
+      "warmth": "Present the rollbacks as good news for the people on call, not as a footnote.",
+      "competence": "Every tile has a source line in the figures file; say 'pilot' so nobody hears a promise.",
+      "script": [
+        {"text": "[click: 42] \"Three teams, six weeks, forty-two database upgrades.\""},
+        {"text": "[click: 40 min] \"The median hands-on time went from 5.5 hours to **forty minutes**.\" [pause]", "anchor": true},
+        {"text": "[click: 42 of 42] \"Every one of the forty-two had a named approver before anything ran.\""},
+        {"text": "[click: 2] [soft: this is the reassuring part] \"And two upgrades failed their checks. The assistant stopped and rolled them back on its own. That's the part I'd want if I were on call.\""}
+      ],
+      "transition": "\"So what does that change for the teams day to day?\"",
+      "notes": ["Fictional sample data. In a real deck every tile must match a line in the figures file."]
+    },
+    {
+      "id": "s5", "nav": "5",
+      "title": "5 · What changes for your teams",
+      "pauses_s": 4,
+      "checkpoint": "into the ask by 3:30",
+      "purpose": "Translate the mechanics into the teams' week, and land that they keep control.",
+      "warmth": "Speak about the teams' time, not the tool's features.",
+      "competence": "Keep each row to one concrete change you can show in the pilot.",
+      "script": [
+        {"text": "[click] \"Today someone reads every release note. Tomorrow they review a plan.\""},
+        {"text": "[click] \"Today upgrades wait for a free week. Tomorrow they run in the pipeline, one window at a time.\""},
+        {"text": "[click] \"And every change has a name on it. [slow] **Your pipeline, your approval, your record.**\"", "anchor": true}
+      ],
+      "transition": "\"Which brings me to what's coming.\""
+    },
+    {
+      "id": "s6", "nav": "6",
+      "title": "6 · What's next, the ask, thank you",
+      "pauses_s": 8,
+      "checkpoint": "done by 4:15",
+      "purpose": "Tie the ask to work that is already scheduled, make it small enough to say yes to today, then open the room.",
+      "warmth": "Step toward the room for the ask; it is a request, not a pitch.",
+      "competence": "Name the size of the ask exactly. A small, precise ask is easier to approve than a vague big one.",
+      "script": [
+        {"text": "[click: 118] \"118 clusters reach end of support in the next six months. That work is coming either way.\""},
+        {"text": "[click: the ask] [move: toward the room] [pause] \"So here is what I'm asking for. **Two teams, eight weeks, and one executive sponsor.**\"", "anchor": true},
+        {"text": "[click: the question] \"Thank you. [slow: open question] **Which two teams would you put in first?**\" [pause: then stop and let them answer]", "anchor": true}
+      ],
+      "transition": "Hold the silence. Let the room answer first."
+    }
+  ],
+  "questions": [
+    {"q": "What if the plan is wrong?", "a": "\"Then nobody approves it. The plan is a file your team reads before anything runs, and the dry run shows what would happen on a copy.\""},
+    {"q": "Does it need access to production?", "a": "\"Five of the seven steps are read-only. It only changes things in Execute, after the approval, and through your pipeline.\""},
+    {"q": "What will it cost?", "a": "\"The ask today is two teams' time for eight weeks and a sponsor. I'll bring a cost estimate to the sponsor in week one.\"", "confirm": true},
+    {"q": "Is 40 minutes what we'd see everywhere?", "a": "\"It's the pilot median across forty-two upgrades. The next phase is how we find out for the rest of the fleet.\""}
+  ],
+  "timing": {
+    "auto": true,
+    "budget_s": 330,
+    "note": "If the slot shrinks to three minutes, cut slide 5 to its last line and drop the optional story on slide 2; keep the gate line and the ask word for word."
+  },
+  "rehearsal": [
+    "**The 60-second version.** Say slide 1's anchor, the 5.5 hours, the gate line, the 40 minutes and the ask, nothing else. A colleague should be able to repeat the message and the ask.",
+    "**Gate line cold (3 times).** Slide 3's Approve paragraph out loud. Listen for a real stop before 'Then it stops' and a slower pace after it.",
+    "**Hardest question cold.** Have someone ask 'What will it cost?' without warning. Good sounds like the ⚠ answer in under 15 seconds, with no number you can't source.",
+    "**Learn mode pass.** Switch the page to Learn and say each segment from the anchor lines only; click a blurred line to check yourself."
+  ],
+  "footer": "Sources: acme-figures.md (fictional sample data). Presenter-only: contains notes and guardrails never shown to the audience."
+}

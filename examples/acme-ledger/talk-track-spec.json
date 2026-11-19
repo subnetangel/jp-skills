@@ -1,0 +1,136 @@
+{
+  "title": "Acme Ledger: a faster close, with a person approving every posting",
+  "subtitle": "Worked example · finance leadership meeting · 15-minute slot: about 6 minutes of talk, then discussion · fictional product, pilot and figures",
+  "forbidden_terms": ["Project Bluebird", "Globex", "Initech"],
+  "cue_card": {
+    "message": "Acme Ledger takes the matching work out of the month-end close, and nothing reaches the books until our controller says yes.",
+    "anchors": [
+      {"label": "The problem.", "text": "8 working days per close, and most of the hours go to matching by hand."},
+      {"label": "The gate.", "text": "Seven steps, one approval. Nothing posts before it."},
+      {"label": "The proof.", "text": "2 units, 3 closes: 3 days median, 91% matched, 0 unapproved postings."},
+      {"label": "The limits.", "text": "1 line in 11 still needs a person. It proposes; we decide."},
+      {"label": "The ask.", "text": "2 more units for one quarter, with a controller as sponsor."}
+    ],
+    "ask": "Two more business units for one quarter, with one controller as sponsor. Then the question: which unit goes first?",
+    "reminders": "Off slide 2 by 1:45 · into the ask by 5:10 · say 'pilot' and 'target', never 'guaranteed' · no prices · room moments are optional"
+  },
+  "segments": [
+    {
+      "id": "s1", "nav": "1", "title": "1 · The whole idea in one line",
+      "pauses_s": 8, "checkpoint": "off by 0:50",
+      "purpose": "Give the room the whole idea before any detail, and make a promise the rest of the talk keeps.",
+      "warmth": "Start with the week they all know: close week. Look at the people who run it.",
+      "competence": "One plain sentence on what it does and where a person stays in control. No adjectives.",
+      "script": [
+        {"text": "[move: step out from the laptop, eyes on the room] \"Thanks for the time. I'll keep this to about six minutes and leave the rest of the slot for your questions.\""},
+        {"text": "[room: optional, skip if behind the clock] \"Quick one first. Hands up if you've lost an evening to close week lately.\" [pause: 2 s, look across the room] \"That's most of us. Good, you're the right room.\""},
+        {"text": "\"Here's the idea in one line. [slow] **Acme Ledger takes the matching work out of the close, and nothing reaches the books until our controller says yes.**\"", "anchor": true}
+      ],
+      "transition": "\"Let me start with where the days go.\""
+    },
+    {
+      "id": "s2", "nav": "2", "title": "2 · The problem: most of the close is matching",
+      "pauses_s": 8, "checkpoint": "off by 1:45",
+      "purpose": "Make the problem concrete with one number the room can repeat: eight working days.",
+      "warmth": "Credit the close team: the time study was their idea, and they did it on top of a close.",
+      "competence": "Say where the number comes from (six closes) and call the two-thirds figure a time study, not a census.",
+      "script": [
+        {"text": "[click: the close card] \"Every month we close the books. We know what has to happen and when it's due.\""},
+        {"text": "[click: the list] \"What eats the time is the how. Export the bank feed. Find the invoice behind every line. Chase the ones that don't fit. Post, then check it all again.\""},
+        {"text": "[click: the number] \"Over the last six closes, that took us **8 working days** on average. [pause: let the number land] And the close team's own time study says about two thirds of those hours went to matching, by hand.\"", "anchor": true},
+        {"proposal": "If you have a short true story from a recent close (a late night, a line that took a day to find), tell it here in two sentences. Do not invent one.", "label": "Optional story, your call"}
+      ],
+      "transition": "\"So what would it take to give those hours back without giving up control of the books?\"",
+      "notes": ["The two-thirds figure comes from a two-week time study, not from every close. If someone pushes, say exactly that."]
+    },
+    {
+      "id": "s3", "nav": "3", "title": "3 · How it works: seven steps, one gate",
+      "pauses_s": 14, "checkpoint": "off by 3:00",
+      "purpose": "Walk the seven steps and make the approval gate the moment they remember.",
+      "warmth": "Slow down at the gate and look at the controller in the room. This is their step.",
+      "competence": "Name what each step reads and writes. Four steps change nothing, and say so plainly.",
+      "script": [
+        {"text": "[click: Read] \"It starts by reading the month: the bank feed, and the open invoices and receipts. [click: Match] Then it matches each bank line to a document, and attaches that document as evidence.\""},
+        {"text": "[click: Explain] \"Lines it can't match, it explains: no invoice yet, a fee in the amount, two payments for one invoice. [click: Plan] Then it writes a posting plan, with every exception listed and its reason.\""},
+        {"text": "\"Four steps in, it has changed nothing. Everything so far only reads.\""},
+        {"text": "[click: Approve] [pause] [slow: eyes on the controller] **\"Then it stops. Our controller on duty reads the plan and says yes or no. Until then, nothing posts.\"**", "anchor": true},
+        {"text": "[click: Post] \"After the yes, it posts exactly that plan, with the approver's name on the batch. [click: Report] And it writes a close report that our auditors can read.\""}
+      ],
+      "transition": "\"That's the design. Here's what happened when we tried it.\""
+    },
+    {
+      "id": "s4", "nav": "4", "title": "4 · The pilot: eight days down to three",
+      "pauses_s": 12, "checkpoint": "off by 4:00",
+      "purpose": "Prove the design with pilot results, including the safety net catching problems, not just the speed.",
+      "warmth": "Thank the two units by name in the room if their leads are present (names you know, not on the slide).",
+      "competence": "Give the sample size first: two units, three closes. Say median, not average.",
+      "script": [
+        {"text": "[click: 3 days] \"Two business units, three month-end closes. The median close went from eight working days to **three**.\"", "anchor": true},
+        {"text": "[click: 91%] \"In one October close, it read 12,412 bank lines and matched 91 percent of them, each with its document attached. The other 1,117 came to the team with a reason.\""},
+        {"text": "[click: 0] \"Zero entries were posted without a named approver. Not one.\""},
+        {"text": "[click: 14] [soft: this is the reassuring part] \"And 14 times, the controller declined the plan at review. Each one was fixed before it posted. That's the gate doing its job.\""}
+      ],
+      "transition": "\"So what does that change for the team in close week?\"",
+      "notes": ["Fictional sample data in this worked example. In a real deck every tile matches a line in FIGURES.md."]
+    },
+    {
+      "id": "s5", "nav": "5", "title": "5 · What changes for the team",
+      "pauses_s": 6, "checkpoint": "off by 4:35",
+      "purpose": "Translate the mechanics into the team's week, and land that the decisions stay with people.",
+      "warmth": "Talk about the team's evenings, not about efficiency.",
+      "competence": "Each line is a before and after the pilot actually showed. No new claims here.",
+      "script": [
+        {"text": "[click] \"Today someone finds the invoice behind every line. With Acme Ledger they review the lines it couldn't match.\""},
+        {"text": "[click] \"Today we post and then check again. With it we approve a plan, and the posting matches the plan.\""},
+        {"text": "[click] \"And every batch carries a name. [slow] **Our books, our approval, our record.**\"", "anchor": true}
+      ],
+      "transition": "\"Before I ask for anything, here's what it doesn't do.\""
+    },
+    {
+      "id": "s6", "nav": "6", "title": "6 · What it doesn't do",
+      "pauses_s": 6, "checkpoint": "off by 5:10",
+      "purpose": "Earn trust by naming the limits before anyone else does.",
+      "warmth": "Say the limits in the same calm voice as the results. No apology.",
+      "competence": "Each limit is something the pilot showed or did not test. Say which.",
+      "script": [
+        {"text": "[click] \"It doesn't decide for us. It proposes a plan, and a person approves or declines it.\""},
+        {"text": "[click] \"It doesn't clear every line. About one line in eleven still needs a person, and it says why for each one.\""},
+        {"text": "[click] \"And it doesn't replace the audit. It writes the evidence; our auditors still read it.\""}
+      ],
+      "transition": "\"Which brings me to what I'm asking for.\""
+    },
+    {
+      "id": "s7", "nav": "7", "title": "7 · The ask, then questions",
+      "pauses_s": 10, "checkpoint": "into questions by 6:00",
+      "purpose": "Tie the ask to the calendar, make it small enough to say yes to today, then open the room.",
+      "warmth": "Step toward the room for the ask. Then stop talking.",
+      "competence": "The ask has a size, a length and a named role. The target is labelled a target.",
+      "script": [
+        {"text": "[click: 10 weeks] \"The year-end close starts in ten weeks. That's the one we most want to be calm.\""},
+        {"text": "[click: the ask] [move: toward the room] [pause] \"So here's the ask. **Two more business units, for one quarter, with one controller as sponsor.** Our target is a close of four working days or fewer in those units.\"", "anchor": true},
+        {"text": "[click: the question] \"Thank you. [slow: an open question] **Which unit would you put in first?**\" [pause: then stop and let them answer]", "anchor": true}
+      ],
+      "transition": "Hold the silence. Let the room answer first."
+    }
+  ],
+  "questions_intro": "Hard ones first. One or two sentences, then stop. ⚠ means: don't add anything, follow up in writing. If the room goes quiet: \"The question I usually get is whether it can post on its own. It can't. Want me to show where the gate is?\"",
+  "questions": [
+    {"q": "Can it post anything without us?", "a": "\"No. Planning only reads. It posts only an approved plan, and the approver's name goes on the batch.\""},
+    {"q": "What if the plan is wrong?", "a": "\"Then the controller declines it. That happened 14 times in the pilot, and each one was fixed before anything posted.\""},
+    {"q": "Is three days what we'd see everywhere?", "a": "\"It's the pilot median across two units and three closes. The next quarter is how we find out for more units.\""},
+    {"q": "What will it cost?", "a": "\"We didn't measure cost per close in the pilot. I'll bring an estimate to the sponsor in week one.\"", "confirm": true},
+    {"q": "Does it work for our bigger entities?", "a": "\"We haven't tested entities with more than three bank accounts. I'd put one in the next phase to find out.\"", "confirm": true}
+  ],
+  "timing": {
+    "auto": true, "budget_s": 900, "min_spare": 0.10,
+    "note": "The slot is 15 minutes. The talk is planned at about 6 minutes at 120 words a minute plus pauses and clicks, which leaves the rest of the slot for discussion. If the slot shrinks to 5 minutes, drop both room moments and the optional story, and keep the gate line and the ask word for word."
+  },
+  "rehearsal_title": "Rehearsal: three drills, then one timed run",
+  "rehearsal": [
+    "**The 60-second version.** Say the one-line idea, the 8 days, the gate line, the 3 days and the ask, nothing else. Good: a colleague can repeat the message and the ask back to you.",
+    "**The gate line, three times.** Slide 3's Approve paragraph out loud. Good: a real two-second stop before 'Then it stops', a slower pace after it, and your eyes on one person.",
+    "**The hardest question, cold.** Have someone ask 'What will it cost?' without warning. Good: the ⚠ answer in under 15 seconds, with no number you can't source.",
+    "**One timed run, standing.** The whole talk with a clock and the clicks. Good: into questions by 6:00, and no line read off the slide."
+  ],
+  "footer": "Worked example for the presentation-coach skill. Fictional product, pilot and figures; every number traces to FIGURES.md. Presenter-only."
+}

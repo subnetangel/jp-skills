@@ -1,0 +1,34 @@
+{
+  "title": "Close report · October · North entity",
+  "summary": "Fictional sample report. 12,412 bank lines read, 11,295 matched with evidence, 1,117 left for the close team. Nothing was posted before the controller on duty approved the plan.",
+  "kind": "acme-ledger.close-report",
+  "period": "2026-10",
+  "entity": "north",
+  "approved_by": "controller on duty",
+  "sections": [
+    {
+      "title": "Totals",
+      "columns": ["Measure", "Value", "Status"],
+      "rows": [
+        ["Bank lines read", "12,412", "ok:read"],
+        ["Matched with evidence", "11,295 (91%)", "ok:matched"],
+        ["Exceptions for people", "1,117 (9%)", "warn:open"],
+        ["Posted before approval", "0", "ok:none"]
+      ]
+    },
+    {
+      "title": "Largest exception groups",
+      "columns": ["Reason", "Lines", "Owner"],
+      "rows": [
+        ["No matching invoice yet", "604", "Accounts payable"],
+        ["Amount differs by a fee", "331", "Treasury"],
+        ["Two lines, one invoice", "2", "Close lead"],
+        ["Other", "180", "Close team"]
+      ]
+    },
+    {
+      "title": "What this report is",
+      "text": "A sample of the report Acme Ledger writes after each run. Every figure here is fictional and appears in content/FIGURES.md."
+    }
+  ]
+}

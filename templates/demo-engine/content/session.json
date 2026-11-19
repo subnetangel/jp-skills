@@ -1,0 +1,189 @@
+{
+  "title": "Acme Ledger: matching a month-end close",
+  "badge": "Recreated, not live",
+  "label": "A scripted recreation with fictional data. Nothing here runs live.",
+  "footer": "Fictional product, data and figures. Session script: content/session.json.",
+  "prompt": "finance@close:~$ ",
+  "timing": {
+    "type_cps": 38,
+    "enter_ms": 250,
+    "line_ms": 90,
+    "hold_ms": 2200
+  },
+  "start": "match",
+  "scenes": [
+    {
+      "id": "match",
+      "stage": "1 · Match",
+      "clear": true,
+      "caption": "The assistant reads the month's bank lines and matches each one to an invoice or receipt.",
+      "events": [
+        {
+          "type": "type",
+          "text": "acme-ledger match --period 2026-10 --entity north"
+        },
+        {
+          "type": "out",
+          "lines": [
+            "[[dim:reading]] bank feed, 3 accounts ......... 12,412 lines",
+            "[[dim:reading]] open invoices and receipts .... 9,870 documents",
+            "[[dim:matching]] amount, date, reference, payee"
+          ]
+        },
+        {
+          "type": "pause",
+          "ms": 900
+        },
+        {
+          "type": "out",
+          "lines": [
+            "[[ok:matched]]     11,295 lines (91%), evidence attached to each",
+            "[[warn:exceptions]]  1,117 lines (9%) need a person"
+          ]
+        },
+        {
+          "type": "note",
+          "text": "Every match carries the document it matched and the rule that matched it."
+        }
+      ],
+      "next": "plan"
+    },
+    {
+      "id": "plan",
+      "stage": "2 · Plan",
+      "caption": "It writes a posting plan. Nothing reaches the books yet.",
+      "events": [
+        {
+          "type": "type",
+          "text": "acme-ledger plan --period 2026-10 --entity north"
+        },
+        {
+          "type": "out",
+          "lines": [
+            "plan written: [[cmd:match-plan-2026-10-north.json]]",
+            "  11,295 entries to post · 1,117 exceptions listed with reasons",
+            "  [[em:posted so far: 0]]"
+          ]
+        },
+        {
+          "type": "pause",
+          "ms": 700
+        },
+        {
+          "type": "out",
+          "lines": [
+            "[[warn:waiting for approval]] from the controller on duty"
+          ]
+        }
+      ],
+      "choices": [
+        {
+          "label": "Approve the plan",
+          "kind": "approve",
+          "goto": "post"
+        },
+        {
+          "label": "Decline the plan",
+          "kind": "decline",
+          "goto": "declined"
+        },
+        {
+          "label": "Inject an issue",
+          "kind": "inject",
+          "goto": "fault"
+        }
+      ],
+      "auto": "post"
+    },
+    {
+      "id": "fault",
+      "stage": "Issue · Duplicate",
+      "clear": false,
+      "caption": "Injected issue: two bank lines point at the same invoice. The assistant holds both.",
+      "events": [
+        {
+          "type": "out",
+          "lines": [
+            "[[err:held]] 2 bank lines match the same invoice INV-20419",
+            "  line 8,812  and  line 8,815  · same amount, same payee, 2 days apart",
+            "  [[dim:both moved to exceptions; plan updated, posted so far: 0]]"
+          ]
+        },
+        {
+          "type": "note",
+          "text": "A person decides which payment is real. The plan waits."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Approve the updated plan",
+          "kind": "approve",
+          "goto": "post"
+        },
+        {
+          "label": "Decline the plan",
+          "kind": "decline",
+          "goto": "declined"
+        }
+      ]
+    },
+    {
+      "id": "post",
+      "stage": "3 · Post",
+      "caption": "Only after the approval does it post, with the approver's name on the batch.",
+      "events": [
+        {
+          "type": "type",
+          "text": "acme-ledger post --plan match-plan-2026-10-north.json"
+        },
+        {
+          "type": "out",
+          "lines": [
+            "[[dim:approved by]] controller on duty",
+            "[[ok:posted]] 11,295 entries · batch 2026-10-N-01",
+            "[[warn:open]]   1,117 exceptions assigned to the close team"
+          ]
+        },
+        {
+          "type": "pause",
+          "ms": 600
+        },
+        {
+          "type": "out",
+          "lines": [
+            "[[ok:done]] report: close-report-2026-10-north.html"
+          ]
+        }
+      ],
+      "choices": [
+        {
+          "label": "Replay from the start",
+          "kind": "restart",
+          "goto": "match"
+        }
+      ],
+      "auto": "match"
+    },
+    {
+      "id": "declined",
+      "stage": "Declined",
+      "caption": "Declined: nothing is posted, and the plan is kept for the record.",
+      "events": [
+        {
+          "type": "out",
+          "lines": [
+            "[[err:declined]] by the controller on duty",
+            "  posted: 0 · plan archived with the reason"
+          ]
+        }
+      ],
+      "choices": [
+        {
+          "label": "Replay from the start",
+          "kind": "restart",
+          "goto": "match"
+        }
+      ]
+    }
+  ]
+}

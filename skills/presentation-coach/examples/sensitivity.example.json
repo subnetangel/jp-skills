@@ -1,0 +1,16 @@
+{
+  "_comment": "Copy to sensitivity.json and fill in YOUR terms. Keep the real file out of public repos if the terms themselves are sensitive.",
+  "terms": {
+    "codenames": ["Project Bluebird", "Bluebird"],
+    "other-clients": ["Globex", "Initech"],
+    "internal-tools": ["the old ticket queue"]
+  },
+  "patterns": {
+    "money": "\\$\\s?\\d|\\b\\d+(?:\\.\\d+)?\\s?(?:USD|EUR)\\b",
+    "long-numeric-ids": "(?<![\\d.])\\d{12}(?![\\d.])",
+    "email": "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}",
+    "roadmap-quarters": "\\bQ[1-4] ?20\\d\\d\\b"
+  },
+  "allow": [],
+  "ignore_case": true
+}

@@ -1,0 +1,9 @@
+# Phrases whose numbers are logistics or slide furniture, not claims. One per line.
+# A claim whose surrounding text contains one of these counts as sourced. Keep this list short.
+15-minute slot
+about 6 minutes
+about six minutes
+two seconds
+under 15 seconds
+60-second version
+three times

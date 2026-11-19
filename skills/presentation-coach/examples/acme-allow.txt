@@ -1,0 +1,6 @@
+# Phrases whose numbers are logistics or slide furniture, not claims. One per line.
+# A claim whose surrounding text contains one of these counts as sourced.
+# Keep this list short: every line here is a number nobody has to source.
+6-minute opening slot
+hard cap
+target 4:30

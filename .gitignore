@@ -1,0 +1,22 @@
+# build output you make while working (the worked examples' outputs are committed on purpose)
+out/
+dist/
+review/
+.pptx-work/
+
+# dependencies and caches
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+
+# private inputs: never commit these
+sensitivity.json
+!examples/acme-ledger/sensitivity.json
+private/
+raw/
+*staff-code*
+*.pin
+deny.json
+redact-rules.json
+names.json

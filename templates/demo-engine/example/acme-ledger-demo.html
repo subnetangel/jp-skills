@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<!-- SPDX-License-Identifier: MIT -->
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acme Ledger · demo</title>
+<meta name="description" content="Single-file offline demo built from the demo-engine template. Fictional product and data.">
+<!-- Source file. Build the single-file demo with:  python3 build.py src/demo.src.html dist/acme-ledger-demo.html
+     The build fills the css, js, json, img, font, video and raw placeholders and the staff code hash (see build.py).
+     Paths are relative to the template folder. -->
+<script>
+/* ================= CONFIG: the editable defaults. URL options win over these. =================
+   mode         staffed | presenter | kiosk | wall           (?mode=)
+   theme        dark | light                                 (?theme=, L key, saved per browser)
+   idleSeconds  return to the first slide after this many idle seconds; 0 turns it off   (?idle=)
+   speed        terminal and loop speed multiplier            (?speed=)
+   playlists    named lists of slide numbers; the wall loop always starts at the first item  (?playlist=)
+   dwellSeconds seconds per slide in the wall loop; a slide's data-dwell wins
+   chord        the key chord that opens the staff panel in every mode
+   staffCodeSha256  SHA-256 of the staff code, written by build.py. The code itself is never stored.
+   The staff code is a convenience gate for a booth. It is NOT security: anyone with the file can read the page. */
+window.DEMO_CONFIG = {
+  title: 'Acme Ledger demo',
+  mode: 'staffed',
+  theme: 'dark',
+  idleSeconds: 90,
+  speed: 1,
+  playlists: { all: [1, 2, 3, 4, 5, 6, 7, 8], short: [1, 3, 4, 6, 8] },
+  playlist: 'all',
+  dwellSeconds: 9,
+  chord: { key: 'S', ctrl: true, alt: true, shift: false },
+  staffCodeSha256: '9af15b336e6a9619928537df30b2e6a2376569fcf9d7e773eccede65606529a0'
+};
+(function () { var q = new URLSearchParams(location.search), t = q.get('theme');
+  if (!t) { try { t = localStorage.getItem('demo-theme'); } catch (e) {} }
+  document.documentElement.setAttribute('data-theme', (t || window.DEMO_CONFIG.theme) === 'light' ? 'light' : 'dark'); })();
+</script>
+<style>
+/* SPDX-License-Identifier: MIT */
+/* demo-engine: every colour is a token below. To re-skin, edit the two token blocks only (README, "Re-skin"). */
+:root,[data-theme="dark"]{
+  --bg:#0d1117; --surface:#161b22; --surface-2:#1f2630; --line:#30363d; --text:#e6edf3; --muted:#9aa6b2;
+  --accent:#6aa8ff; --accent-text:#08131f; --ok:#4fd18b; --warn:#f2c14e; --err:#ff7b72;
+  --focus:#9cc6ff; --scrim:rgba(1,4,9,.72); --shadow:0 12px 40px rgba(0,0,0,.45);
+}
+[data-theme="light"]{
+  --bg:#f7f8fa; --surface:#ffffff; --surface-2:#eef1f5; --line:#d0d7de; --text:#1f2328; --muted:#57606a;
+  --accent:#0b5cad; --accent-text:#ffffff; --ok:#116b38; --warn:#7a5200; --err:#b42318;
+  --focus:#0b5cad; --scrim:rgba(31,35,40,.45); --shadow:0 12px 40px rgba(31,35,40,.18);
+}
+:root{
+  --sans:system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"DejaVu Sans Mono","Liberation Mono",monospace;
+  --radius:16px; --ease:cubic-bezier(.2,.8,.2,1);
+}
+/* the terminal player follows the same tokens */
+.tp{--tp-bg:var(--bg);--tp-surface:var(--surface-2);--tp-line:var(--line);--tp-text:var(--text);--tp-muted:var(--muted);
+  --tp-prompt:var(--accent);--tp-ok:var(--ok);--tp-warn:var(--warn);--tp-err:var(--err);--tp-em:var(--accent);--tp-cmd:var(--text);
+  --tp-badge-bg:var(--warn);--tp-badge-text:var(--bg);--tp-chip:var(--surface);--tp-focus:var(--focus);--tp-sans:var(--sans);--tp-mono:var(--mono)}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- stage: 1920x1080, scaled and centred ---------- */
+.viewport{position:fixed;inset:0;overflow:hidden}
+.stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:0 0}
+.slide{position:absolute;inset:0;padding:110px 140px 120px;display:flex;flex-direction:column;gap:28px;
+  opacity:0;visibility:hidden;transform:translateX(40px);transition:opacity .45s var(--ease),transform .45s var(--ease),visibility 0s .45s}
+.slide.on{opacity:1;visibility:visible;transform:none;transition:opacity .45s var(--ease),transform .45s var(--ease)}
+.slide.left{transform:translateX(-40px)}
+.eyebrow{font:600 22px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0}
+.slide h1{font-size:76px;line-height:1.05;margin:0;max-width:1500px;letter-spacing:-.01em}
+.slide h2{font-size:56px;line-height:1.1;margin:0;max-width:1550px}
+.lead{font-size:34px;line-height:1.4;color:var(--muted);margin:0;max-width:1400px}
+.foot{position:absolute;left:140px;right:140px;bottom:46px;display:flex;justify-content:space-between;font-size:20px;color:var(--muted)}
+.mark{display:inline-flex;align-items:center;gap:12px;font-weight:700;color:var(--text)}
+.mark svg{width:34px;height:34px}
+
+.cover{justify-content:center}
+.cover h1{font-size:104px}
+.cards{display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:28px;margin-top:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:34px 36px;font-size:28px;line-height:1.4}
+.card h3{font-size:32px;margin:0 0 12px}
+.card p{margin:0;color:var(--muted)}
+.card .k{font:600 20px/1 var(--mono);color:var(--accent);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:14px}
+.big{font-size:120px;font-weight:700;line-height:1;color:var(--text);display:block;margin-bottom:12px}
+.big small{font-size:44px;color:var(--muted);font-weight:600;margin-left:8px}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-top:24px;counter-reset:s}
+.steps li{list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px;font-size:26px;line-height:1.35;position:relative}
+.steps li::before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--surface-2);font:700 26px/1 var(--mono);margin-bottom:18px}
+.steps li.gate{border-color:var(--warn)}
+.steps li.gate::before{background:var(--warn);color:var(--bg)}
+.steps b{display:block;font-size:30px;margin-bottom:8px}
+.steps span{color:var(--muted)}
+.term-slot{flex:1;min-height:0;display:flex}
+.term-slot .tp{flex:1;font-size:22px}
+.term-slot .tp-screen{font-size:24px}
+.term-slot .tp-btn,.term-slot .tp-chip{font-size:20px;padding:8px 16px}
+.cta{align-self:flex-start;background:var(--accent);color:var(--accent-text);border:0;border-radius:12px;padding:20px 30px;font-size:28px;font-weight:700;cursor:pointer}
+.honest{font-size:22px;color:var(--muted);border-left:4px solid var(--warn);padding-left:18px;margin:0}
+ul.plain{margin:0;padding:0 0 0 1.1em;font-size:32px;line-height:1.6}
+
+/* ---------- chrome: counter, nav, buttons ---------- */
+.chrome{position:fixed;z-index:20;display:flex;gap:8px;align-items:center}
+.chrome.br{right:16px;bottom:14px}
+.chrome.bl{left:16px;bottom:14px}
+.ibtn{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:44px;height:44px;padding:0 12px;cursor:pointer;display:inline-grid;place-items:center;color:var(--text)}
+.ibtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.counter{font:600 15px/1 var(--mono);color:var(--muted);padding:0 8px}
+.modetag{font:600 13px/1 var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 10px}
+.progress{position:fixed;left:0;top:0;height:4px;background:var(--accent);width:100%;transform-origin:0 0;transition:transform .4s var(--ease);z-index:20}
+[data-mode="kiosk"] .staff-only,[data-mode="wall"] .staff-only{display:none!important}
+[data-mode="wall"] .nav-only{display:none!important}
+[data-mode="presenter"] .nav-only{opacity:0}
+[data-mode="presenter"] .nav-only:focus-visible,[data-mode="presenter"] .chrome:hover .nav-only{opacity:1}
+
+/* ---------- overlays: picker, staff panel, report viewer ---------- */
+.overlay{position:fixed;inset:0;z-index:40;background:var(--scrim);display:none;place-items:center;padding:24px}
+.overlay.open{display:grid}
+.panel{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);width:min(960px,96vw);max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.panel header{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.panel header h2{font-size:20px;margin:0;flex:1}
+.panel .body{padding:18px 20px;overflow:auto}
+.picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.picker-grid button{text-align:left;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;min-height:84px}
+.picker-grid button[aria-current="true"]{border-color:var(--accent)}
+.picker-grid b{display:block;font:700 14px/1 var(--mono);color:var(--accent);margin-bottom:6px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 16px}
+.row h3{width:100%;font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:6px 0 2px}
+.btn{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer}
+.btn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--accent-text)}
+.code-in{font:600 22px/1 var(--mono);letter-spacing:.3em;padding:10px 14px;width:12ch;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px}
+.msg{color:var(--err);min-height:1.4em;margin:8px 0 0}
+.warnbox{font-size:14px;color:var(--muted);border-left:3px solid var(--warn);padding-left:10px;margin:0 0 14px}
+.tabs{display:flex;gap:6px}
+.tabs [role="tab"]{background:transparent;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+.tabs [role="tab"][aria-selected="true"]{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.viewer{flex:1;overflow:auto;padding:20px;touch-action:pan-x pan-y}
+.zoomable{transform-origin:0 0}
+.report h3{margin:18px 0 6px}
+.report table{border-collapse:collapse;width:100%;font-size:15px}
+.report th,.report td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line)}
+.report .ok{color:var(--ok)} .report .warn{color:var(--warn)} .report .err{color:var(--err)}
+.json{font:14px/1.5 var(--mono);white-space:pre;margin:0}
+.zoomctl{display:flex;gap:6px;align-items:center}
+.zoomctl output{font:600 13px/1 var(--mono);min-width:4ch;text-align:center}
+.hint{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);font-size:14px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;z-index:15;transition:opacity .6s}
+.hint.gone{opacity:0;pointer-events:none}
+[data-mode="wall"] .hint,[data-mode="kiosk"] .hint{display:none}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* SPDX-License-Identifier: MIT */
+/* term-player.css: every colour is a token. Re-skin by editing the tokens only. */
+:root{
+  --tp-bg:#0e1116; --tp-surface:#161b22; --tp-line:#2b3340; --tp-text:#e6edf3; --tp-muted:#9aa6b2;
+  --tp-prompt:#7cc4ff; --tp-ok:#5fd38d; --tp-warn:#f2c14e; --tp-err:#ff7b72; --tp-em:#d2a8ff; --tp-cmd:#e6edf3;
+  --tp-badge-bg:#f2c14e; --tp-badge-text:#1b1400; --tp-chip:#1f2630; --tp-focus:#7cc4ff;
+  --tp-mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"DejaVu Sans Mono","Liberation Mono",monospace;
+  --tp-sans:system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+[data-theme="light"]{
+  --tp-bg:#fbfbfc; --tp-surface:#f0f2f5; --tp-line:#d0d6de; --tp-text:#1c2128; --tp-muted:#57606a;
+  --tp-prompt:#0a5bb5; --tp-ok:#116b38; --tp-warn:#7a5200; --tp-err:#b42318; --tp-em:#6e40c9; --tp-cmd:#1c2128;
+  --tp-badge-bg:#7a5200; --tp-badge-text:#ffffff; --tp-chip:#e6e9ee; --tp-focus:#0a5bb5;
+}
+.tp{display:flex;flex-direction:column;background:var(--tp-bg);color:var(--tp-text);border:1px solid var(--tp-line);border-radius:12px;overflow:hidden;font:15px/1.5 var(--tp-sans);min-height:0}
+.tp-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 12px;background:var(--tp-surface);border-bottom:1px solid var(--tp-line)}
+.tp-badge{background:var(--tp-badge-bg);color:var(--tp-badge-text);font-weight:700;font-size:13px;padding:2px 8px;border-radius:999px}
+.tp-stage{font-weight:600}
+.tp-stage:empty{display:none}
+.tp-title{color:var(--tp-muted);font-size:14px}
+.tp-ctl{margin-left:auto;display:flex;gap:6px}
+.tp-btn,.tp-chip{font:inherit;font-size:14px;color:var(--tp-text);background:var(--tp-chip);border:1px solid var(--tp-line);border-radius:8px;padding:4px 10px;cursor:pointer}
+.tp-btn:focus-visible,.tp-chip:focus-visible,.tp-screen:focus-visible{outline:3px solid var(--tp-focus);outline-offset:2px}
+.tp-screen{flex:1;min-height:12em;overflow:auto;padding:14px 16px;font:15px/1.55 var(--tp-mono);white-space:pre-wrap;word-break:break-word}
+.tp-line{min-height:1.55em}
+.tp-prompt{color:var(--tp-prompt)}
+.tp-cursor{display:inline-block;width:.6em;height:1.1em;vertical-align:-.15em;background:var(--tp-text);animation:tp-blink 1s steps(1) infinite}
+.tp-ok{color:var(--tp-ok)} .tp-warn{color:var(--tp-warn)} .tp-err{color:var(--tp-err)} .tp-dim{color:var(--tp-muted)}
+.tp-em{color:var(--tp-em);font-weight:600} .tp-cmd{color:var(--tp-cmd);font-weight:600}
+.tp-note{color:var(--tp-muted);font-style:italic}
+.tp-caption{padding:8px 14px;border-top:1px solid var(--tp-line);background:var(--tp-surface);min-height:2.4em}
+.tp-caption:empty{display:none}
+.tp-chips{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px}
+.tp-chips:empty{display:none}
+.tp-chip-approve{border-color:var(--tp-ok)} .tp-chip-decline{border-color:var(--tp-err)} .tp-chip-inject{border-color:var(--tp-warn)}
+.tp-chip-approve::before{content:"✓ "} .tp-chip-decline::before{content:"✕ "} .tp-chip-inject::before{content:"! "}
+.tp-paused .tp-cursor{animation:none}
+@keyframes tp-blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.tp-cursor{animation:none}}
+
+</style>
+</head>
+<body>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<p class="sr-only" id="live" aria-live="polite"></p>
+
+<div class="viewport" id="viewport">
+<main class="stage" id="stage">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mark" viewBox="0 0 64 64"><rect x="3" y="3" width="58" height="58" rx="14" fill="currentColor" opacity=".16"/><path d="M18 44h28M18 32h28M18 20h16" stroke="currentColor" stroke-width="6" stroke-linecap="round" fill="none"/></symbol>
+</svg>
+
+<!-- 1 -->
+<section class="slide cover" data-title="Acme Ledger" aria-label="Title" data-dwell="7">
+  <p class="eyebrow">Fictional product · sample demo</p>
+  <h1>Close the month in days, with a person approving every posting.</h1>
+  <p class="lead">Acme Ledger matches bank lines to invoices and receipts, explains what it can't match, and posts nothing until your controller says yes.</p>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>Fictional product and data</span></div>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-title="The problem" aria-label="The problem">
+  <p class="eyebrow">The problem</p>
+  <h2>Most of a month-end close is matching, and it's done by hand.</h2>
+  <div class="cards" style="--n:2">
+    <div class="card"><span class="k">Baseline</span><span class="big">8<small>working days</small></span><p>Average close over the last six closes, before the pilot.</p></div>
+    <div class="card"><span class="k">Where the time goes</span><ul class="plain"><li>Export the bank feed</li><li>Find the invoice for each line</li><li>Chase the ones that don't fit</li><li>Post, then check again</li></ul></div>
+  </div>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>Sample figures, see FIGURES.md</span></div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-title="How it works" aria-label="How it works">
+  <p class="eyebrow">How it works</p>
+  <h2>Five steps. Nothing reaches the books before step 3.</h2>
+  <ol class="steps">
+    <li><b>Match</b><span>Each bank line to an invoice or receipt, with the evidence attached.</span></li>
+    <li><b>Plan</b><span>A posting plan, plus every exception with its reason.</span></li>
+    <li class="gate"><b>Approve</b><span>The controller on duty reads the plan and says yes or no.</span></li>
+    <li><b>Post</b><span>Only the approved plan, with the approver's name on the batch.</span></li>
+    <li><b>Report</b><span>A close report your auditors can read.</span></li>
+  </ol>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>3 / 8</span></div>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-title="Drive it" aria-label="Drive it: recreated terminal session">
+  <p class="eyebrow">Drive it · recreated, not live</p>
+  <h2 style="font-size:44px">Approve it, decline it, or inject an issue.</h2>
+  <div class="term-slot" data-no-advance></div>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>Scripted recreation with fictional data</span></div>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-title="The close report" aria-label="The close report">
+  <p class="eyebrow">The evidence</p>
+  <h2>Every run ends with a report a person can read and a machine can check.</h2>
+  <div class="cards">
+    <div class="card"><span class="k">Matched</span><span class="big">91%</span><p>11,295 of 12,412 bank lines, each with its document.</p></div>
+    <div class="card"><span class="k">For people</span><span class="big">1,117</span><p>Exceptions, grouped by reason and owner.</p></div>
+    <div class="card"><span class="k">Posted early</span><span class="big">0</span><p>Nothing posted before the approval.</p></div>
+  </div>
+  <button class="cta" type="button" data-open-report>Open the close report</button>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>October close, North entity (fictional)</span></div>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-title="Pilot results" aria-label="Pilot results">
+  <p class="eyebrow">Pilot · 2 business units · 3 closes</p>
+  <h2>The close went from 8 working days to 3.</h2>
+  <div class="cards">
+    <div class="card"><span class="k">Median close</span><span class="big">3<small>days</small></span><p>Down from an 8-day average before the pilot.</p></div>
+    <div class="card"><span class="k">Unapproved postings</span><span class="big">0</span><p>Every batch carries a named approver.</p></div>
+    <div class="card"><span class="k">Caught at review</span><span class="big">14</span><p>Plans declined, fixed, then posted.</p></div>
+  </div>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>Fictional sample data</span></div>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-title="What it doesn't do" aria-label="What it does not do">
+  <p class="eyebrow">Honest limits</p>
+  <h2>What it doesn't do.</h2>
+  <div class="cards">
+    <div class="card"><h3>Decide for you</h3><p>It proposes. The controller approves or declines every plan.</p></div>
+    <div class="card"><h3>Clear every line</h3><p>About 1 in 11 lines still needs a person. It says why for each one.</p></div>
+    <div class="card"><h3>Replace the audit</h3><p>It writes the evidence. Your auditors still read it.</p></div>
+  </div>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>7 / 8</span></div>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-title="Next step" aria-label="Next step">
+  <p class="eyebrow">Next step</p>
+  <h2>Two more business units for one quarter, with one controller as sponsor.</h2>
+  <p class="lead">Which unit would you put in first?</p>
+  <p class="honest">About this demo: the product, the data and the run are fictional. The terminal on slide 4 is a scripted recreation, not a live system.</p>
+  <div class="foot"><span class="mark"><svg aria-hidden="true"><use href="#mark"/></svg>Acme Ledger</span><span>Thank you</span></div>
+</section>
+
+</main>
+</div>
+
+<!-- chrome -->
+<div class="chrome bl">
+  <span class="modetag" id="modetag"></span>
+  <button class="ibtn" id="pausebtn" type="button" aria-pressed="false" aria-label="Pause or play the loop (P)"><span>Pause</span></button>
+</div>
+<div class="chrome br">
+  <button class="ibtn nav-only" id="prev" type="button" aria-label="Previous slide"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <span class="counter" id="counter" aria-hidden="true"></span>
+  <button class="ibtn nav-only" id="next" type="button" aria-label="Next slide"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  <button class="ibtn staff-only" id="gridbtn" type="button" aria-label="Slide picker (G)"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></button>
+  <button class="ibtn staff-only" id="themebtn" type="button" aria-label="Light or dark theme (L)"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg></button>
+  <button class="ibtn staff-only" id="gearbtn" type="button" aria-label="Staff panel"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></button>
+</div>
+<div class="hint" id="hint">→ next · G slides · L theme · F full screen</div>
+
+<!-- slide picker -->
+<div class="overlay" id="picker" role="dialog" aria-modal="true" aria-labelledby="picker-h">
+  <div class="panel">
+    <header><h2 id="picker-h">Go to slide</h2><button class="btn" type="button" data-close>Close</button></header>
+    <div class="body"><div class="picker-grid" id="picker-grid"></div></div>
+  </div>
+</div>
+
+<!-- staff panel -->
+<div class="overlay" id="staff" role="dialog" aria-modal="true" aria-labelledby="staff-h">
+  <div class="panel" style="width:min(720px,96vw)">
+    <header><h2 id="staff-h">Staff panel</h2><button class="btn" type="button" data-close>Close</button></header>
+    <div class="body">
+      <div id="staff-gate">
+        <p class="warnbox">A convenience gate for booth staff, not security. Never put anything behind it a visitor may not see.</p>
+        <label for="staff-code">Staff code</label><br>
+        <input class="code-in" id="staff-code" type="password" inputmode="numeric" autocomplete="off">
+        <button class="btn" id="staff-ok" type="button">Unlock</button>
+        <p class="msg" id="staff-msg" role="alert"></p>
+      </div>
+      <div id="staff-body" hidden>
+        <div class="row"><h3>Mode</h3>
+          <button class="btn" type="button" data-setmode="staffed">Staffed</button>
+          <button class="btn" type="button" data-setmode="presenter">Presenter</button>
+          <button class="btn" type="button" data-setmode="kiosk">Kiosk</button>
+          <button class="btn" type="button" data-setmode="wall">Wall loop</button>
+        </div>
+        <div class="row"><h3>Playlist (wall loop)</h3><label class="sr-only" for="staff-playlist">Playlist</label><select class="btn" id="staff-playlist"></select></div>
+        <div class="row"><h3>Jump to</h3><div id="staff-jump" class="row" style="margin:0"></div></div>
+        <div class="row"><h3>Station</h3>
+          <button class="btn" type="button" id="staff-restart">Restart at the first slide</button>
+          <button class="btn" type="button" id="staff-idle">Reset idle timer</button>
+          <button class="btn" type="button" id="staff-theme">Switch theme</button>
+          <button class="btn" type="button" id="staff-lock">Lock the panel</button>
+        </div>
+        <p class="msg" id="staff-note" style="color:var(--muted)" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- report viewer -->
+<div class="overlay" id="report" role="dialog" aria-modal="true" aria-labelledby="report-h">
+  <div class="panel" style="width:min(1100px,96vw);height:86vh">
+    <header>
+      <h2 id="report-h">Close report</h2>
+      <div class="tabs" role="tablist" aria-label="Report view">
+        <button type="button" role="tab" data-tab="human" aria-selected="true" aria-controls="panel-human">Human view</button>
+        <button type="button" role="tab" data-tab="json" aria-selected="false" aria-controls="panel-json" tabindex="-1">Machine view (JSON)</button>
+      </div>
+      <div class="zoomctl">
+        <button class="btn" type="button" id="zoom-out" aria-label="Zoom out">−</button>
+        <output id="zoom-val" aria-live="polite">100%</output>
+        <button class="btn" type="button" id="zoom-in" aria-label="Zoom in">+</button>
+        <button class="btn" type="button" id="zoom-reset">Reset</button>
+      </div>
+      <button class="btn" type="button" data-close>Close</button>
+    </header>
+    <div class="viewer" id="panel-human" role="tabpanel" tabindex="0"><div class="zoomable report" id="report-human"></div></div>
+    <div class="viewer" id="panel-json" role="tabpanel" tabindex="0" hidden><div class="zoomable"><pre class="json" id="report-json"></pre></div></div>
+  </div>
+</div>
+
+<script>
+window.DEMO_SESSION = {"title": "Acme Ledger: matching a month-end close", "badge": "Recreated, not live", "label": "A scripted recreation with fictional data. Nothing here runs live.", "footer": "Fictional product, data and figures. Session script: content/session.json.", "prompt": "finance@close:~$ ", "timing": {"type_cps": 38, "enter_ms": 250, "line_ms": 90, "hold_ms": 2200}, "start": "match", "scenes": [{"id": "match", "stage": "1 · Match", "clear": true, "caption": "The assistant reads the month's bank lines and matches each one to an invoice or receipt.", "events": [{"type": "type", "text": "acme-ledger match --period 2026-10 --entity north"}, {"type": "out", "lines": ["[[dim:reading]] bank feed, 3 accounts ......... 12,412 lines", "[[dim:reading]] open invoices and receipts .... 9,870 documents", "[[dim:matching]] amount, date, reference, payee"]}, {"type": "pause", "ms": 900}, {"type": "out", "lines": ["[[ok:matched]]     11,295 lines (91%), evidence attached to each", "[[warn:exceptions]]  1,117 lines (9%) need a person"]}, {"type": "note", "text": "Every match carries the document it matched and the rule that matched it."}], "next": "plan"}, {"id": "plan", "stage": "2 · Plan", "caption": "It writes a posting plan. Nothing reaches the books yet.", "events": [{"type": "type", "text": "acme-ledger plan --period 2026-10 --entity north"}, {"type": "out", "lines": ["plan written: [[cmd:match-plan-2026-10-north.json]]", "  11,295 entries to post · 1,117 exceptions listed with reasons", "  [[em:posted so far: 0]]"]}, {"type": "pause", "ms": 700}, {"type": "out", "lines": ["[[warn:waiting for approval]] from the controller on duty"]}], "choices": [{"label": "Approve the plan", "kind": "approve", "goto": "post"}, {"label": "Decline the plan", "kind": "decline", "goto": "declined"}, {"label": "Inject an issue", "kind": "inject", "goto": "fault"}], "auto": "post"}, {"id": "fault", "stage": "Issue · Duplicate", "clear": false, "caption": "Injected issue: two bank lines point at the same invoice. The assistant holds both.", "events": [{"type": "out", "lines": ["[[err:held]] 2 bank lines match the same invoice INV-20419", "  line 8,812  and  line 8,815  · same amount, same payee, 2 days apart", "  [[dim:both moved to exceptions; plan updated, posted so far: 0]]"]}, {"type": "note", "text": "A person decides which payment is real. The plan waits."}], "choices": [{"label": "Approve the updated plan", "kind": "approve", "goto": "post"}, {"label": "Decline the plan", "kind": "decline", "goto": "declined"}]}, {"id": "post", "stage": "3 · Post", "caption": "Only after the approval does it post, with the approver's name on the batch.", "events": [{"type": "type", "text": "acme-ledger post --plan match-plan-2026-10-north.json"}, {"type": "out", "lines": ["[[dim:approved by]] controller on duty", "[[ok:posted]] 11,295 entries · batch 2026-10-N-01", "[[warn:open]]   1,117 exceptions assigned to the close team"]}, {"type": "pause", "ms": 600}, {"type": "out", "lines": ["[[ok:done]] report: close-report-2026-10-north.html"]}], "choices": [{"label": "Replay from the start", "kind": "restart", "goto": "match"}], "auto": "match"}, {"id": "declined", "stage": "Declined", "caption": "Declined: nothing is posted, and the plan is kept for the record.", "events": [{"type": "out", "lines": ["[[err:declined]] by the controller on duty", "  posted: 0 · plan archived with the reason"]}], "choices": [{"label": "Replay from the start", "kind": "restart", "goto": "match"}]}]};
+window.DEMO_REPORT = {"title": "Close report · October · North entity", "summary": "Fictional sample report. 12,412 bank lines read, 11,295 matched with evidence, 1,117 left for the close team. Nothing was posted before the controller on duty approved the plan.", "kind": "acme-ledger.close-report", "period": "2026-10", "entity": "north", "approved_by": "controller on duty", "sections": [{"title": "Totals", "columns": ["Measure", "Value", "Status"], "rows": [["Bank lines read", "12,412", "ok:read"], ["Matched with evidence", "11,295 (91%)", "ok:matched"], ["Exceptions for people", "1,117 (9%)", "warn:open"], ["Posted before approval", "0", "ok:none"]]}, {"title": "Largest exception groups", "columns": ["Reason", "Lines", "Owner"], "rows": [["No matching invoice yet", "604", "Accounts payable"], ["Amount differs by a fee", "331", "Treasury"], ["Two lines, one invoice", "2", "Close lead"], ["Other", "180", "Close team"]]}, {"title": "What this report is", "text": "A sample of the report Acme Ledger writes after each run. Every figure here is fictional and appears in content/FIGURES.md."}]};
+</script>
+<script>
+/* SPDX-License-Identifier: MIT */
+/* term-player.js: plays a recreated terminal session from a session script (see references/session-format.md).
+ * Vanilla JS, no dependencies. One function of the script and the clock: the same script gives the same screen.
+ *
+ *   const p = TermPlayer.mount(el, session, { speed: 1, autoplay: true, reducedMotion: false,
+ *                                            onScene: id => {}, onEnd: () => {} });
+ *   p.play(); p.pause(); p.toggle(); p.restart(); p.goto('scene-id'); p.setStep(true); p.next(); p.destroy();
+ *   TermPlayer.timing(session, speed)  -> [{id, stage, ms}]  (the main path, same formula as build_replay.py)
+ */
+(function (global) {
+  'use strict';
+  var STOP = {};
+  var TAG = /\[\[(ok|warn|err|dim|em|cmd):([^\]]*)\]\]/g;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+  }
+  function markup(s) { return esc(s).replace(TAG, '<span class="tp-$1">$2</span>'); }
+  function plain(s) { return String(s).replace(TAG, '$2'); }
+  function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+
+  /* Timing model, shared with scripts/build_replay.py: typing chars/cps + enter, one line every line_ms, pauses as
+     written, then the scene's hold before an automatic choice. Everything divides by speed. */
+  function eventMs(ev, t) {
+    if (ev.type === 'type') return plain(ev.text).length / t.type_cps * 1000 + t.enter_ms;
+    if (ev.type === 'out') return (ev.lines || []).length * (ev.line_ms || t.line_ms);
+    if (ev.type === 'note') return t.line_ms;
+    if (ev.type === 'pause') return ev.ms || 0;
+    return 0;
+  }
+  function tune(session) {
+    var t = session.timing || {};
+    return { type_cps: t.type_cps || 40, enter_ms: t.enter_ms == null ? 250 : t.enter_ms,
+             line_ms: t.line_ms || 70, hold_ms: t.hold_ms == null ? 1800 : t.hold_ms };
+  }
+  function scenes(session) { var m = {}; (session.scenes || []).forEach(function (s) { m[s.id] = s; }); return m; }
+  function autoNext(s) {
+    if (s.auto) return s.auto;
+    if (s.choices && s.choices.length) return s.choices[0].goto;
+    return s.next || null;
+  }
+  function timing(session, speed) {
+    var t = tune(session), m = scenes(session), out = [], seen = {}, id = session.start || (session.scenes[0] || {}).id;
+    while (id && m[id] && !seen[id]) {
+      seen[id] = 1;
+      var s = m[id], ms = (s.events || []).reduce(function (a, e) { return a + eventMs(e, t); }, 0);
+      if (s.choices && s.choices.length) ms += t.hold_ms;
+      out.push({ id: id, stage: s.stage || '', ms: ms / (speed || 1) });
+      id = autoNext(s);
+    }
+    return out;
+  }
+
+  function mount(root, session, opts) {
+    opts = opts || {};
+    var t = tune(session), m = scenes(session);
+    var st = { speed: +opts.speed > 0 ? +opts.speed : 1, autoplay: opts.autoplay !== false, paused: false, step: false,
+               tok: 0, waiter: null, scene: null, reduce: !!opts.reducedMotion };
+    root.classList.add('tp');
+    root.innerHTML = '';
+    var bar = el('div', 'tp-bar');
+    var badge = el('span', 'tp-badge', esc(session.badge || 'Recreated, not live'));
+    badge.title = session.label || 'A scripted recreation of a session. Nothing here runs live.';
+    var stage = el('span', 'tp-stage'), title = el('span', 'tp-title', esc(session.title || ''));
+    var ctl = el('span', 'tp-ctl');
+    function btn(label, aria, fn) { var b = el('button', 'tp-btn', label); b.type = 'button'; b.setAttribute('aria-label', aria); b.addEventListener('click', fn); ctl.appendChild(b); return b; }
+    var bPlay = btn('Pause', 'Pause or play the replay', function () { api.toggle(); });
+    btn('Restart', 'Restart the replay from the beginning', function () { api.restart(); });
+    var bStep = btn('Step: off', 'Step through one line at a time', function () { api.setStep(!st.step); });
+    var bNext = btn('Next', 'Show the next line', function () { api.next(); });
+    bNext.hidden = true;
+    bar.append(badge, stage, title, ctl);
+    var screen = el('div', 'tp-screen');
+    screen.setAttribute('role', 'log'); screen.setAttribute('aria-label', session.aria || 'Recreated terminal session');
+    screen.tabIndex = 0;
+    var lines = el('div', 'tp-lines');
+    screen.appendChild(lines);
+    var caption = el('div', 'tp-caption'); caption.setAttribute('aria-live', 'polite');
+    var chips = el('div', 'tp-chips'); chips.setAttribute('role', 'group'); chips.setAttribute('aria-label', 'Choices');
+    root.append(bar, screen, caption, chips);
+
+    function stick() { screen.scrollTop = screen.scrollHeight; }
+    function line(html, cls) { var d = el('div', 'tp-line' + (cls ? ' ' + cls : ''), html); lines.appendChild(d); stick(); return d; }
+    function alive(tok) { if (tok !== st.tok) throw STOP; }
+    function wait(ms, tok) {
+      var left = ms / st.speed;
+      return new Promise(function (res, rej) {
+        (function tick() {
+          if (tok !== st.tok) return rej(STOP);
+          if (left <= 0) return res();
+          var d = Math.min(40, left);
+          setTimeout(function () { if (!st.paused) left -= d; tick(); }, d);
+        })();
+      });
+    }
+    function stepGate(tok) {
+      if (!st.step) return Promise.resolve();
+      return new Promise(function (res, rej) { st.waiter = function () { st.waiter = null; tok === st.tok ? res() : rej(STOP); }; });
+    }
+    function setPaused(p) { st.paused = p; bPlay.textContent = p ? 'Play' : 'Pause'; root.classList.toggle('tp-paused', p); }
+
+    async function typeLine(ev, tok) {
+      var d = line('<span class="tp-prompt">' + esc(ev.prompt != null ? ev.prompt : (session.prompt || '$ ')) + '</span><span class="tp-typed"></span><span class="tp-cursor" aria-hidden="true"></span>');
+      var typed = d.querySelector('.tp-typed'), text = plain(ev.text);
+      if (st.reduce) { typed.textContent = text; await wait(t.enter_ms, tok); }
+      else {
+        var per = 1000 / t.type_cps;
+        for (var i = 1; i <= text.length; i++) { typed.textContent = text.slice(0, i); await wait(per, tok); }
+        await wait(t.enter_ms, tok);
+      }
+      typed.innerHTML = markup(ev.text);
+      var c = d.querySelector('.tp-cursor'); if (c) c.remove();
+    }
+    async function run(ev, tok) {
+      alive(tok);
+      if (ev.type === 'type') await typeLine(ev, tok);
+      else if (ev.type === 'out') {
+        for (var i = 0; i < (ev.lines || []).length; i++) { line(markup(ev.lines[i]), ev.cls ? 'tp-' + ev.cls : ''); await wait(ev.line_ms || t.line_ms, tok); }
+      }
+      else if (ev.type === 'note') { line('<span class="tp-note-mark" aria-hidden="true">›</span> ' + markup(ev.text), 'tp-note'); await wait(t.line_ms, tok); }
+      else if (ev.type === 'pause') await wait(ev.ms || 0, tok);
+      else if (ev.type === 'caption') caption.innerHTML = markup(ev.text || '');
+      else if (ev.type === 'stage') stage.textContent = ev.text || '';
+      else if (ev.type === 'clear') lines.innerHTML = '';
+      await stepGate(tok);
+    }
+    function showChips(s, tok) {
+      chips.innerHTML = '';
+      (s.choices || []).forEach(function (c) {
+        var b = el('button', 'tp-chip tp-chip-' + (c.kind || 'next'), esc(c.label)); b.type = 'button';
+        b.addEventListener('click', function () { api.goto(c.goto); });
+        chips.appendChild(b);
+      });
+      if (st.autoplay && (s.choices || []).length) {
+        wait(t.hold_ms, tok).then(function () { api.goto(autoNext(s)); }, function () {});
+      }
+    }
+    async function playScene(id) {
+      var tok = ++st.tok, s = m[id];
+      chips.innerHTML = '';
+      if (!s) return;
+      st.scene = id;
+      root.dataset.scene = id;
+      if (s.clear) lines.innerHTML = '';
+      stage.textContent = s.stage || '';
+      caption.innerHTML = markup(s.caption || '');
+      if (opts.onScene) opts.onScene(id, s);
+      try {
+        for (var i = 0; i < (s.events || []).length; i++) await run(s.events[i], tok);
+        if (s.choices && s.choices.length) showChips(s, tok);
+        else if (s.next) { await wait(t.hold_ms / 2, tok); api.goto(s.next); }
+        else { root.classList.add('tp-ended'); if (opts.onEnd) opts.onEnd(); }
+      } catch (e) { if (e !== STOP) throw e; }
+    }
+    var api = {
+      play: function () { setPaused(false); },
+      pause: function () { setPaused(true); },
+      toggle: function () { setPaused(!st.paused); },
+      restart: function () { root.classList.remove('tp-ended'); lines.innerHTML = ''; setPaused(false); playScene(session.start || session.scenes[0].id); },
+      goto: function (id) { if (id) { root.classList.remove('tp-ended'); playScene(id); } },
+      setStep: function (on) { st.step = !!on; bStep.textContent = 'Step: ' + (on ? 'on' : 'off'); bNext.hidden = !on; if (!on && st.waiter) st.waiter(); },
+      next: function () { if (st.waiter) st.waiter(); },
+      setSpeed: function (s) { if (+s > 0) st.speed = +s; },
+      setAutoplay: function (a) { st.autoplay = !!a; },
+      scene: function () { return st.scene; },
+      destroy: function () { st.tok++; root.innerHTML = ''; }
+    };
+    screen.addEventListener('keydown', function (e) {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); st.step ? api.next() : api.toggle(); }
+    });
+    if (opts.start !== false) api.restart();
+    return api;
+  }
+
+  global.TermPlayer = { mount: mount, timing: timing, plain: plain };
+})(window);
+
+</script>
+<script>
+/* SPDX-License-Identifier: MIT */
+/* demo-engine: slides, modes, staff panel, idle return, wall loop, slide picker, report viewer, terminal slot.
+ * Reads window.DEMO_CONFIG (defaults) and the URL (wins over the defaults). Vanilla JS, no dependencies.
+ *
+ * URL options: ?mode=staffed|presenter|kiosk|wall  ?playlist=KEY  ?speed=N  ?theme=light|dark  ?lock  ?idle=SECONDS
+ *              ?admin (open the staff panel)  ?reset (forget the unlocked staff session)  #N (open slide N)
+ * Keys:        → ← Space PgUp PgDn, 1-9, Home, End, G picker, L theme, F full screen, P pause the loop, Esc close,
+ *              the staff chord from CONFIG (default Ctrl+Alt+S) opens the staff panel in every mode.
+ */
+(function () {
+  'use strict';
+  var C = window.DEMO_CONFIG || {};
+  var q = new URLSearchParams(location.search);
+  var MODES = ['staffed', 'presenter', 'kiosk', 'wall'];
+  var mode = MODES.indexOf(q.get('mode')) >= 0 ? q.get('mode') : (MODES.indexOf(C.mode) >= 0 ? C.mode : 'staffed');
+  var speed = clamp(parseFloat(q.get('speed')) || C.speed || 1, 0.25, 8);
+  var idleS = q.has('idle') ? Math.max(0, parseInt(q.get('idle'), 10) || 0) : (C.idleSeconds == null ? 90 : C.idleSeconds);
+  var locked = q.has('lock') || mode === 'kiosk' || mode === 'wall';
+  var playlists = C.playlists || {};
+  var plKey = playlists[q.get('playlist')] ? q.get('playlist') : (C.playlist || 'all');
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var root = document.documentElement;
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function within(e, sel) { return !!(e.target && e.target.closest && e.target.closest(sel)); }
+
+  if (q.has('reset')) { try { sessionStorage.removeItem('demo-staff'); localStorage.removeItem('demo-theme'); } catch (e) {} }
+  root.dataset.mode = mode;
+
+  /* ---------- theme ---------- */
+  function setTheme(t, save) { root.setAttribute('data-theme', t === 'light' ? 'light' : 'dark'); if (save) { try { localStorage.setItem('demo-theme', t); } catch (e) {} } }
+  function toggleTheme() { setTheme(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light', true); }
+
+  /* ---------- stage fit ---------- */
+  var stage = $('#stage'), viewport = $('#viewport');
+  function fit() { var s = Math.min(viewport.clientWidth / 1920, viewport.clientHeight / 1080); stage.style.transform = 'scale(' + s + ') translate(-50%,-50%)'; }
+  addEventListener('resize', fit); fit();
+
+  /* ---------- slides ---------- */
+  var slides = $$('.slide'), N = slides.length, cur = -1;
+  var order = (playlists[plKey] || slides.map(function (_, i) { return i + 1; })).map(function (n) { return n - 1; }).filter(function (i) { return i >= 0 && i < N; });
+  var counter = $('#counter'), progress = $('#progress');
+  function title(i) { return slides[i].dataset.title || slides[i].getAttribute('aria-label') || ('Slide ' + (i + 1)); }
+  function go(i, from) {
+    i = clamp(i, 0, N - 1);
+    if (i === cur) return;
+    slides.forEach(function (s, k) { s.classList.toggle('on', k === i); s.classList.toggle('left', k < i); s.setAttribute('aria-hidden', k !== i); s.inert = k !== i; });
+    cur = i;
+    counter.textContent = (i + 1) + ' / ' + N;
+    progress.style.transform = 'scaleX(' + ((i + 1) / N) + ')';
+    try { history.replaceState(null, '', location.pathname + location.search + '#' + (i + 1)); }
+    catch (e) { location.hash = '#' + (i + 1); }       // some file:// contexts refuse replaceState
+    $('#live').textContent = 'Slide ' + (i + 1) + ' of ' + N + ': ' + title(i);
+    onEnter(slides[i]);
+    if (mode === 'wall' && from !== 'loop') scheduleLoop();
+  }
+  function next() { go(cur + 1); }
+  function prev() { go(cur - 1); }
+
+  /* ---------- terminal slot and report button, per slide ---------- */
+  var term = null;
+  function onEnter(s) {
+    var slot = $('.term-slot', s);
+    if (term) { term.destroy(); term = null; }
+    if (slot && window.TermPlayer && window.DEMO_SESSION) {
+      var host = document.createElement('div'); slot.innerHTML = ''; slot.appendChild(host);
+      term = TermPlayer.mount(host, window.DEMO_SESSION, { speed: speed, autoplay: mode === 'wall', reducedMotion: reduce });
+    }
+  }
+  function slideDwell(i) {
+    var s = slides[i], d = parseFloat(s.dataset.dwell) || C.dwellSeconds || 9;
+    if ($('.term-slot', s) && window.TermPlayer && window.DEMO_SESSION) {
+      var ms = TermPlayer.timing(window.DEMO_SESSION, speed).reduce(function (a, r) { return a + r.ms; }, 0);
+      d = Math.max(d, ms / 1000 + 3);
+    }
+    return d * 1000 / (s.querySelector('.term-slot') ? 1 : speed);
+  }
+
+  /* ---------- wall loop: fixed first item, then the playlist in order ---------- */
+  var loopT = null, loopPaused = false, loopIdx = 0;
+  function scheduleLoop() {
+    clearTimeout(loopT);
+    if (mode !== 'wall' || loopPaused) return;
+    loopT = setTimeout(function () { loopIdx = (loopIdx + 1) % order.length; go(order[loopIdx], 'loop'); scheduleLoop(); }, slideDwell(cur));
+  }
+  function setLoopPaused(p) {
+    loopPaused = p;
+    var b = $('#pausebtn'); if (b) { b.setAttribute('aria-pressed', p); b.querySelector('span').textContent = p ? 'Play' : 'Pause'; }
+    if (term) p ? term.pause() : term.play();
+    if (!p) scheduleLoop(); else clearTimeout(loopT);
+  }
+
+  /* ---------- idle return (staffed and kiosk; never while presenting) ---------- */
+  var lastInput = Date.now();
+  function touch() { lastInput = Date.now(); }
+  setInterval(function () {
+    if (!idleS || mode === 'presenter' || Date.now() - lastInput < idleS * 1000) return;
+    if (mode === 'wall') { if (loopPaused) setLoopPaused(false); return; }   // a paused loop resumes on its own
+    if (cur !== order[0] || (term && term.scene() !== (window.DEMO_SESSION || {}).start)) { closeAll(); cur = -1; go(order[0]); }
+    lastInput = Date.now();
+  }, 1000);
+
+  /* ---------- overlays ---------- */
+  var openOverlay = null, lastFocus = null;
+  function open(id) {
+    closeAll(); var o = document.getElementById(id); if (!o) return;
+    lastFocus = document.activeElement; o.classList.add('open'); openOverlay = o;
+    var f = o.querySelector('[autofocus],button,input,[tabindex="0"]'); if (f) f.focus();
+  }
+  function closeAll() { $$('.overlay.open').forEach(function (o) { o.classList.remove('open'); }); if (openOverlay && lastFocus) lastFocus.focus(); openOverlay = null; }
+  $$('[data-close]').forEach(function (b) { b.addEventListener('click', closeAll); });
+  $$('.overlay').forEach(function (o) { o.addEventListener('click', function (e) { if (e.target === o) closeAll(); }); });
+  // keep Tab inside an open dialog
+  addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab' || !openOverlay) return;
+    var f = $$('button,input,select,[tabindex="0"]', openOverlay).filter(function (x) { return !x.disabled && x.offsetParent !== null; });
+    if (!f.length) return;
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  });
+
+  /* ---------- slide picker (G or the grid button; hidden in kiosk and wall) ---------- */
+  function openPicker() {
+    if (mode === 'kiosk' || mode === 'wall') return;
+    var g = $('#picker-grid'); g.innerHTML = '';
+    slides.forEach(function (s, i) {
+      var b = document.createElement('button'); b.type = 'button';
+      b.innerHTML = '<b>' + (i + 1) + '</b>' + escapeHtml(title(i));
+      if (i === cur) b.setAttribute('aria-current', 'true');
+      b.addEventListener('click', function () { closeAll(); go(i); });
+      g.appendChild(b);
+    });
+    open('picker');
+  }
+  function escapeHtml(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  /* ---------- staff panel: a convenience gate for a booth, NOT security ---------- */
+  function unlocked() { try { return sessionStorage.getItem('demo-staff') === C.staffCodeSha256; } catch (e) { return false; } }
+  function openStaff() {
+    if (unlocked()) return showStaffBody();
+    $('#staff-gate').hidden = false; $('#staff-body').hidden = true; $('#staff-msg').textContent = '';
+    $('#staff-code').value = ''; open('staff'); $('#staff-code').focus();
+  }
+  function tryCode() {
+    var v = $('#staff-code').value.trim();
+    if (sha256(v) === C.staffCodeSha256) { try { sessionStorage.setItem('demo-staff', C.staffCodeSha256); } catch (e) {} showStaffBody(); }
+    else { $('#staff-msg').textContent = 'That code did not match.'; $('#staff-code').select(); }
+  }
+  function showStaffBody() {
+    $('#staff-gate').hidden = true; $('#staff-body').hidden = false;
+    $$('[data-setmode]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.setmode === mode); });
+    var pl = $('#staff-playlist'); pl.innerHTML = '';
+    Object.keys(playlists).forEach(function (k) { var o = document.createElement('option'); o.value = k; o.textContent = k + ' (' + playlists[k].length + ' slides)'; if (k === plKey) o.selected = true; pl.appendChild(o); });
+    var j = $('#staff-jump'); j.innerHTML = '';
+    slides.forEach(function (s, i) { var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = (i + 1) + ' · ' + title(i); b.addEventListener('click', function () { closeAll(); go(i); }); j.appendChild(b); });
+    if (!openOverlay) open('staff');
+    var f = $('#staff-body button'); if (f) f.focus();
+  }
+  function relaunch(params) {
+    var p = new URLSearchParams(location.search);
+    ['admin', 'reset'].forEach(function (k) { p.delete(k); });
+    Object.keys(params).forEach(function (k) { params[k] == null ? p.delete(k) : p.set(k, params[k]); });
+    location.search = p.toString();
+  }
+  $('#staff-ok').addEventListener('click', tryCode);
+  $('#staff-code').addEventListener('keydown', function (e) { if (e.key === 'Enter') tryCode(); });
+  $$('[data-setmode]').forEach(function (b) { b.addEventListener('click', function () { relaunch({ mode: b.dataset.setmode, playlist: $('#staff-playlist').value }); }); });
+  $('#staff-idle').addEventListener('click', function () { lastInput = Date.now(); $('#staff-note').textContent = 'Idle timer reset.'; });
+  $('#staff-restart').addEventListener('click', function () { closeAll(); cur = -1; loopIdx = 0; go(order[0]); });
+  $('#staff-theme').addEventListener('click', toggleTheme);
+  $('#staff-lock').addEventListener('click', function () { try { sessionStorage.removeItem('demo-staff'); } catch (e) {} closeAll(); });
+
+  /* ---------- report viewer: Human and Machine tabs, zoom, Esc closes ---------- */
+  var zoom = 1;
+  function setZoom(z) { zoom = clamp(z, 0.5, 3); $$('.zoomable').forEach(function (el) { el.style.transform = 'scale(' + zoom + ')'; el.style.width = (100 / zoom) + '%'; }); $('#zoom-val').textContent = Math.round(zoom * 100) + '%'; }
+  function renderReport() {
+    var r = window.DEMO_REPORT || {};
+    var h = '<h2 style="margin:0 0 6px">' + escapeHtml(r.title || 'Report') + '</h2><p>' + escapeHtml(r.summary || '') + '</p>';
+    (r.sections || []).forEach(function (sec) {
+      h += '<h3>' + escapeHtml(sec.title) + '</h3>';
+      if (sec.rows) {
+        h += '<table><thead><tr>' + sec.columns.map(function (c) { return '<th>' + escapeHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
+        sec.rows.forEach(function (row) { h += '<tr>' + row.map(function (c) { var m = /^(ok|warn|err):(.*)$/.exec(String(c)); return m ? '<td class="' + m[1] + '">' + escapeHtml(m[2]) + '</td>' : '<td>' + escapeHtml(c) + '</td>'; }).join('') + '</tr>'; });
+        h += '</tbody></table>';
+      }
+      if (sec.text) h += '<p>' + escapeHtml(sec.text) + '</p>';
+    });
+    $('#report-human').innerHTML = h;
+    $('#report-json').textContent = JSON.stringify(r, null, 2);
+  }
+  function tab(which) {
+    $$('#report [role="tab"]').forEach(function (t) { var on = t.dataset.tab === which; t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1; });
+    $('#panel-human').hidden = which !== 'human'; $('#panel-json').hidden = which !== 'json';
+  }
+  function openReport() { renderReport(); tab('human'); setZoom(1); open('report'); }
+  $$('#report [role="tab"]').forEach(function (t) {
+    t.addEventListener('click', function () { tab(t.dataset.tab); });
+    t.addEventListener('keydown', function (e) { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); var o = t.dataset.tab === 'human' ? 'json' : 'human'; tab(o); $('#report [data-tab="' + o + '"]').focus(); } });
+  });
+  $('#zoom-in').addEventListener('click', function () { setZoom(zoom + 0.1); });
+  $('#zoom-out').addEventListener('click', function () { setZoom(zoom - 0.1); });
+  $('#zoom-reset').addEventListener('click', function () { setZoom(1); });
+  $$('#report .viewer').forEach(function (v) {
+    v.addEventListener('wheel', function (e) { if (e.ctrlKey) { e.preventDefault(); setZoom(zoom * (e.deltaY < 0 ? 1.08 : 1 / 1.08)); } }, { passive: false });
+    var pts = {}, startD = 0, startZ = 1;
+    function dist() { var p = Object.keys(pts).map(function (k) { return pts[k]; }); return p.length < 2 ? 0 : Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); }
+    v.addEventListener('pointerdown', function (e) { pts[e.pointerId] = { x: e.clientX, y: e.clientY }; if (Object.keys(pts).length === 2) { startD = dist(); startZ = zoom; } });
+    v.addEventListener('pointermove', function (e) { if (!pts[e.pointerId]) return; pts[e.pointerId] = { x: e.clientX, y: e.clientY }; if (Object.keys(pts).length === 2 && startD) setZoom(startZ * dist() / startD); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) { v.addEventListener(t, function (e) { delete pts[e.pointerId]; if (Object.keys(pts).length < 2) startD = 0; }); });
+  });
+  $$('[data-open-report]').forEach(function (b) { b.addEventListener('click', openReport); });
+
+  /* ---------- input ---------- */
+  function chord(e) { var k = C.chord || { key: 'S', ctrl: true, alt: true }; return e.key.toUpperCase() === k.key && !!e.ctrlKey === !!k.ctrl && !!e.altKey === !!k.alt && !!e.shiftKey === !!k.shift; }
+  addEventListener('keydown', function (e) {
+    touch();
+    if (chord(e)) { e.preventDefault(); openStaff(); return; }
+    if (e.key === 'Escape') { closeAll(); return; }
+    if (openOverlay || within(e, 'input,select,textarea')) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k === 'p' || k === 'P') { if (mode === 'wall') setLoopPaused(!loopPaused); else if (term) term.toggle(); return; }
+    if (mode === 'wall') return;                               // the loop ignores everything else
+    if (k === 'ArrowRight' || k === 'PageDown' || (k === ' ' && !within(e, 'button,.tp-screen'))) { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); prev(); }
+    else if (k === 'Home') go(0);
+    else if (k === 'End') go(N - 1);
+    else if (/^[1-9]$/.test(k) && +k <= N) go(+k - 1);
+    else if ((k === 'g' || k === 'G')) openPicker();
+    else if ((k === 'l' || k === 'L') && !locked) toggleTheme();
+    else if (k === 'f' || k === 'F') { if (!document.fullscreenElement) root.requestFullscreen && root.requestFullscreen(); else document.exitFullscreen && document.exitFullscreen(); }
+  });
+  ['pointerdown', 'wheel', 'touchstart'].forEach(function (t) { addEventListener(t, touch, { passive: true }); });
+  var tx = null;
+  addEventListener('touchstart', function (e) { tx = e.changedTouches[0].clientX; }, { passive: true });
+  addEventListener('touchend', function (e) { if (tx === null || mode === 'wall' || openOverlay) return; var dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 60) (dx < 0 ? next : prev)(); tx = null; }, { passive: true });
+  stage.addEventListener('click', function (e) { if (mode === 'wall' || mode === 'kiosk' || within(e, 'button,a,input,select,.tp,[data-no-advance]')) return; next(); });
+  $('#prev').addEventListener('click', prev);
+  $('#next').addEventListener('click', next);
+  $('#gridbtn').addEventListener('click', openPicker);
+  $('#themebtn').addEventListener('click', toggleTheme);
+  $('#gearbtn').addEventListener('click', openStaff);
+  $('#pausebtn').addEventListener('click', function () { setLoopPaused(!loopPaused); });
+  addEventListener('hashchange', function () { var n = parseInt(location.hash.slice(1), 10); if (n && n - 1 !== cur && mode !== 'wall') go(n - 1); });
+
+  /* ---------- start ---------- */
+  $('#modetag').textContent = mode + (locked && mode !== 'kiosk' && mode !== 'wall' ? ' · locked' : '');
+  if (mode !== 'wall') $('#pausebtn').hidden = true;
+  if (locked) { $('#themebtn').hidden = true; $('#gearbtn').hidden = true; $('#gridbtn').hidden = mode !== 'staffed' && mode !== 'presenter'; }
+  setTimeout(function () { var h = $('#hint'); if (h) h.classList.add('gone'); }, 6000);
+  var startAt = parseInt(location.hash.slice(1), 10);
+  if (mode === 'wall') { loopIdx = 0; go(order[0]); }                      // always the first item, never a random one
+  else go(startAt ? startAt - 1 : order[0]);
+  if (q.has('admin')) openStaff();
+
+  /* ---------- SHA-256 (FIPS 180-4), so the staff check works from file:// in any browser ---------- */
+  function sha256(str) {
+    var K = [], H = [], i, j, isP = function (n) { for (var d = 2; d * d <= n; d++) if (n % d === 0) return false; return true; };
+    for (var n = 2, c = 0; c < 64; n++) if (isP(n)) { if (c < 8) H[c] = (Math.pow(n, 1 / 2) * 4294967296) | 0; K[c++] = (Math.pow(n, 1 / 3) * 4294967296) | 0; }
+    var bytes = unescape(encodeURIComponent(str)), l = bytes.length, words = [];
+    for (i = 0; i < l; i++) words[i >> 2] |= bytes.charCodeAt(i) << (24 - (i % 4) * 8);
+    words[l >> 2] |= 0x80 << (24 - (l % 4) * 8);
+    words[(((l + 8) >> 6) << 4) + 15] = l * 8;
+    var r = function (x, k) { return (x >>> k) | (x << (32 - k)); };
+    for (j = 0; j < words.length; j += 16) {
+      for (var w = [], x = 0; x < 16; x++) w[x] = words[j + x] | 0;   // the padded block has holes; fill them with 0
+      var a = H.slice(0);
+      for (i = 0; i < 64; i++) {
+        if (i >= 16) { var w15 = w[i - 15], w2 = w[i - 2]; w[i] = (w[i - 16] + (r(w15, 7) ^ r(w15, 18) ^ (w15 >>> 3)) + w[i - 7] + (r(w2, 17) ^ r(w2, 19) ^ (w2 >>> 10))) | 0; }
+        var t1 = (a[7] + (r(a[4], 6) ^ r(a[4], 11) ^ r(a[4], 25)) + ((a[4] & a[5]) ^ (~a[4] & a[6])) + K[i] + (w[i] | 0)) | 0;
+        var t2 = ((r(a[0], 2) ^ r(a[0], 13) ^ r(a[0], 22)) + ((a[0] & a[1]) ^ (a[0] & a[2]) ^ (a[1] & a[2]))) | 0;
+        a = [(t1 + t2) | 0].concat(a.slice(0, 7)); a[4] = (a[4] + t1) | 0;
+      }
+      for (i = 0; i < 8; i++) H[i] = (H[i] + a[i]) | 0;
+    }
+    return H.map(function (h) { return ('00000000' + (h >>> 0).toString(16)).slice(-8); }).join('');
+  }
+  window.DemoEngine = { go: go, next: next, prev: prev, openReport: openReport, openStaff: openStaff, sha256: sha256 };
+})();
+
+</script>
+</body>
+</html>

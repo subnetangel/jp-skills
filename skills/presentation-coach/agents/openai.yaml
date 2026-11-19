@@ -1,0 +1,8 @@
+interface:
+  display_name: Presentation Coach
+  short_description: Build, critique and rehearse presentations in your own voice
+  default_prompt: Use $presentation-coach to build or review my presentation and talk track for this audience and time limit.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  allow_implicit_invocation: true
