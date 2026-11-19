@@ -18,8 +18,7 @@ not a vulnerability. A way to recover the code from something other than its has
 
 Please report privately, not in a public issue.
 
-TODO (maintainer): add a private contact method, for example GitHub's "Report a vulnerability" (private
-vulnerability reporting) on this repository, before it is made public.
+Email jp@subnetangel.com with "jp-skills security" in the subject.
 
 Include what you ran, what happened, and what you expected. You should get an acknowledgement within a week.
 
