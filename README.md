@@ -4,7 +4,7 @@ Skills that help an AI agent build talks and demos the way an experienced presen
 ask, a talk track in the speaker's own voice with timing and delivery cues, likely questions with short answers, a
 rehearsal plan, a single-file HTML deck that works offline, and walk-up demos with a staff panel and a recreated
 terminal. Every number has to trace to a source, every talk has to leave at least 10% of its slot spare, and every
-check reports pass, fail or not run with its evidence. Nothing here invents facts, stories or results. The collection also includes an ArtCraft workflow for short video and other media production.
+check reports pass, fail or not run with its evidence. Nothing here invents facts, stories or results. The collection also includes an ArtCraft skill for photo cleanup, sound production, design, animation, and short video.
 
 The skills use the open [Agent Skills](https://agentskills.io/specification) format, so they work in Claude Code,
 OpenAI Codex CLI, Cursor, Gemini CLI, GitHub Copilot and other harnesses (`INSTALL.md`). The default path needs
@@ -22,7 +22,7 @@ only Python 3.9 and a way to read and write files.
 | [`terminal-replay-demo`](skills/terminal-replay-demo/SKILL.md) | Capture real terminal sessions honestly for a booth demo: golden runs, redaction, release guard, venue checks |
 | [`demo-best-practices`](skills/demo-best-practices/SKILL.md) | Review a demo for the venue, with a checklist and shared screen modes |
 | [`demo-cheat-sheet`](skills/demo-cheat-sheet/SKILL.md) | A one-page card for someone covering a demo they did not build |
-| [`craft-for-agents`](skills/craft-for-agents/SKILL.md) | Route ArtCraft jobs, qualify MCPs, and plan, edit, validate and test vertical reels |
+| [`craft-for-agents`](skills/craft-for-agents/SKILL.md) | Photo cleanup, original sound and voice cleanup, graphics and motion, video and Reels, and scoped MCP setup |
 
 Also: [`agents/bragi.md`](agents/bragi.md), a coach persona any harness can load as a system prompt;
 [`templates/demo-engine/`](templates/demo-engine/README.md), the demo shell; [`examples/acme-ledger/`](examples/acme-ledger/README.md),
